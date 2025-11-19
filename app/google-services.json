@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "909465344837",
+    "project_id": "unitrade-5228c",
+    "storage_bucket": "unitrade-5228c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:909465344837:android:f23b958177a7cfd4297c2c",
+        "android_client_info": {
+          "package_name": "com.unitrade.unitrade"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "909465344837-1qlqbfs3l3bh20eau57qsd3glrbr1dos.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD73LFi6hx7CySpvicRNtx2QF5hmW438jo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "909465344837-1qlqbfs3l3bh20eau57qsd3glrbr1dos.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

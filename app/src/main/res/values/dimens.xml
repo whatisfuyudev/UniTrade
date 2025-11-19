@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- tinggi bottom navigation; sesuaikan bila ingin lebih besar/lebih kecil -->
+    <dimen name="bottom_nav_height">64dp</dimen>
+    <dimen name="nav_host_bottom_margin">64dp</dimen>
+</resources>

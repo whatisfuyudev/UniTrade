@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/splashFragment">
+
+    <fragment
+        android:id="@+id/splashFragment"
+        android:name="com.unitrade.unitrade.SplashFragment"
+        android:label="Splash" >
+        <action android:id="@+id/action_splash_to_login" app:destination="@id/loginFragment" />
+        <action android:id="@+id/action_splash_to_main" app:destination="@id/main_nav" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.unitrade.unitrade.LoginFragment"
+        android:label="Login">
+        <action android:id="@+id/action_login_to_register" app:destination="@id/registerFragment"/>
+        <action android:id="@+id/action_login_to_main" app:destination="@id/main_nav"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.unitrade.unitrade.RegisterFragment"
+        android:label="Register" >
+        <!-- actions requested: register -> login, register -> main -->
+        <action
+            android:id="@+id/action_register_to_login"
+            app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_register_to_main"
+            app:destination="@id/main_nav" />
+    </fragment>
+
+    <navigation
+        android:id="@+id/main_nav"
+        app:startDestination="@id/homeFragment">
+
+        <fragment
+            android:id="@+id/homeFragment"
+            android:name="com.unitrade.unitrade.HomeFragment"
+            android:label="Home" >
+            <!-- Actions from Home -->
+            <!-- action_home_to_search -> currently points to productListFragment (adjust later if you create SearchFragment) -->
+            <action
+                android:id="@+id/action_home_to_search"
+                app:destination="@id/productListFragment" />
+            <!-- action_home_to_addProduct -> currently points to productListFragment
+                 Replace destination with AddEditProductFragment id when available -->
+            <action
+                android:id="@+id/action_home_to_addProduct"
+                app:destination="@id/productListFragment" />
+        </fragment>
+
+        <fragment
+            android:id="@+id/productListFragment"
+            android:name="com.unitrade.unitrade.ProductListFragment"
+            android:label="Products" />
+        <!-- more fragments will be added in later stages -->
+    </navigation>
+</navigation>
