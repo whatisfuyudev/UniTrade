@@ -93,4 +93,28 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // --------------------------
+// NEW DEPENDENCIES (tambahkan ke dependencies block)
+// --------------------------
+
+// NEW: Realtime Database (non-KTX) - direkomendasikan bila ingin fitur presence / onDisconnect
+    implementation("com.google.firebase:firebase-database") // NEW
+
+// NEW: OkHttp - untuk upload multipart langsung ke Cloudinary (atau HTTP request lain)
+    implementation("com.squareup.okhttp3:okhttp:4.11.0") // NEW
+
+// NEW: Gson - parsing response Cloudinary / JSON ringan
+    implementation("com.google.code.gson:gson:2.10.1") // NEW
+
+// NEW: Hilt navigation helper - mempermudah injection dalam fragment yang dipakai nav component
+    implementation("androidx.hilt:hilt-navigation-fragment:1.0.0") // NEW
+
+// OPTIONAL - NEW: Retrofit + Gson converter (jika ingin wrapper HTTP yang terstruktur)
+    implementation("com.squareup.retrofit2:retrofit:2.9.0") // NEW (opsional)
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0") // NEW (opsional)
+
+    // PHOTO VIEW untuk pinch-to-zoom
+    implementation("com.github.chrisbanes:PhotoView:2.3.0")
+
 }

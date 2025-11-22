@@ -15,6 +15,7 @@ Catatan implementasi:
 */
 
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.PropertyName
 import com.google.firebase.firestore.ServerTimestamp
 
 data class Product(
@@ -26,8 +27,9 @@ data class Product(
     val condition: String = "",
     val price: Double = 0.0,
     val imageUrls: List<String> = emptyList(),
-    val isActive: Boolean = true,
-    // Gunakan Timestamp jika dokumen menggunakan timestamp Firestore
+    // ubah menjadi var agar Firestore dapat mem-set nilainya
+    @get:PropertyName("isActive") @set:PropertyName("isActive")
+    var isActive: Boolean = true,
     @ServerTimestamp
     val createdAt: Timestamp? = null,
     @ServerTimestamp

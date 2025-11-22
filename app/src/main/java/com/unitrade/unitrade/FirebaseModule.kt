@@ -23,4 +23,13 @@ object FirebaseModule {
     @Provides
     @Singleton
     fun provideStorage(): FirebaseStorage = FirebaseStorage.getInstance()
+
+    // Cloudinary config - fill with your cloud name & unsigned preset
+    @Provides
+    @Singleton
+    fun provideCloudinaryUploader(): CloudinaryUploader {
+        val cloudName = "dxfrr8lsd"          // replace with your value
+        val uploadPreset = "unitrade"  // replace with your unsigned preset name
+        return CloudinaryUploader(cloudName, uploadPreset)
+    }
 }

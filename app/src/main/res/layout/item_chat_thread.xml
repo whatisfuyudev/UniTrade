@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="72dp"
+    android:padding="12dp">
+
+    <ImageView android:id="@+id/imgAvatar" android:layout_width="48dp" android:layout_height="48dp" android:src="@mipmap/ic_launcher_round" />
+    <LinearLayout android:orientation="vertical" android:layout_marginStart="12dp" android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent">
+        <TextView android:id="@+id/tvName" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Nama" />
+        <TextView android:id="@+id/tvLastMessage" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Terakhir pesan" android:textAppearance="?attr/textAppearanceBodySmall"/>
+    </LinearLayout>
+
+    <TextView android:id="@+id/tvTime" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="12:30"/>
+</LinearLayout>

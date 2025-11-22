@@ -1,22 +1,5 @@
 package com.unitrade.unitrade
 
-/*
-File: app/src/main/java/com/unitrade/unitrade/ui/product/detail/ProductDetailFragment.kt
-
-Deskripsi:
-Fragment untuk menampilkan detail produk individual.
-- Mengambil productId dari arguments (bundle).
-- Memanggil ProductRepository.getProductOnce(productId) (suspend) untuk memuat data.
-- Menampilkan hero image, judul, harga, kondisi, deskripsi.
-- Tombol Favorite & Chat menampilkan Toast sementara (fitur penuh akan diimplementasikan selanjutnya).
-- Menggunakan Glide untuk memuat gambar.
-
-Praktik modern:
-- Hilt untuk ProductRepository injection.
-- Memanggil fungsi suspend dengan viewLifecycleOwner.lifecycleScope.launch.
-- Menggunakan view-binding via findViewById (bisa diganti dengan generated binding bila kamu gunakan).
-*/
-
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageButton
@@ -34,18 +17,32 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * app/src/main/java/com/unitrade/unitrade/ProductDetailFragment.kt
+ *
+ * Menampilkan detail produk. Saat tombol "Chat Penjual" ditekan:
+ * - jika user belum login -> navigasi ke LoginFragment
+ * - jika user login -> buat/ambil chat thread antara user dan penjual, lalu navigasi ke ChatDetailFragment
+ *
+ * Catatan:
+ * - Memerlukan ChatRepository yang memiliki suspend fun getOrCreateThreadWith(userA, userB): String
+ * - Pastikan ChatRepository di-provide/inject via Hilt di project.
+ */
 @AndroidEntryPoint
 class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
 
     @Inject
     lateinit var repository: ProductRepository
 
+    // Inject ChatRepository untuk operasi chat
+    @Inject
+    lateinit var chatRepository: ChatRepository
+
     private var productId: String? = null
     private var currentProduct: Product? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Ambil productId dari arguments (diset saat navigate dari adapter)
         productId = arguments?.getString("productId")
     }
 
@@ -60,18 +57,57 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         val btnChat = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnChatSeller)
         val btnSave = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSave)
 
-        // Back navigation
         btnBack.setOnClickListener { findNavController().popBackStack() }
 
-        // Placeholder behaviour for favourite/save/chat
         btnFavorite.setOnClickListener {
             Toast.makeText(requireContext(), "Sedang on progress", Toast.LENGTH_SHORT).show()
         }
         btnSave.setOnClickListener {
             Toast.makeText(requireContext(), "Sedang on progress", Toast.LENGTH_SHORT).show()
         }
+
+        // Chat button behaviour:
         btnChat.setOnClickListener {
-            Toast.makeText(requireContext(), "Membuka chat dengan penjual (fitur on progress)", Toast.LENGTH_SHORT).show()
+            // disable sementara untuk mencegah klik ganda
+            btnChat.isEnabled = false
+
+            // Ambil user saat ini
+            val currentUid = chatRepository.auth.currentUser?.uid
+            if (currentUid == null) {
+                // user belum login -> arahkan ke halaman login
+                Toast.makeText(requireContext(), "Harap login terlebih dahulu untuk menghubungi penjual", Toast.LENGTH_SHORT).show()
+                // navigasi ke loginFragment (pastikan nav_graph memiliki id loginFragment)
+                findNavController().navigate(R.id.loginFragment)
+                btnChat.isEnabled = true
+                return@setOnClickListener
+            }
+
+            val ownerId = currentProduct?.ownerId
+            if (ownerId.isNullOrBlank()) {
+                Toast.makeText(requireContext(), "Informasi penjual tidak tersedia", Toast.LENGTH_SHORT).show()
+                btnChat.isEnabled = true
+                return@setOnClickListener
+            }
+
+            if (ownerId == currentUid) {
+                Toast.makeText(requireContext(), "Ini adalah produk milik Anda", Toast.LENGTH_SHORT).show()
+                btnChat.isEnabled = true
+                return@setOnClickListener
+            }
+
+            // buat atau ambil thread (suspend) lalu navigasi ke chat detail
+            viewLifecycleOwner.lifecycleScope.launch {
+                try {
+                    val chatId = chatRepository.getOrCreateThreadWith(currentUid, ownerId)
+                    // navigasi ke chatDetailFragment dengan arg chatId
+                    val bundle = Bundle().apply { putString("chatId", chatId) }
+                    findNavController().navigate(R.id.chatDetailFragment, bundle)
+                } catch (e: Exception) {
+                    Toast.makeText(requireContext(), "Gagal memulai chat: ${e.message}", Toast.LENGTH_LONG).show()
+                } finally {
+                    btnChat.isEnabled = true
+                }
+            }
         }
 
         // Load product detail (suspend function)
@@ -86,7 +122,6 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
                         tvCondition.text = product.condition
                         tvDescription.text = product.description
 
-                        // Load image (ambil url pertama bila valid)
                         val url = product.imageUrls.firstOrNull()?.takeIf { it.isNotBlank() && it != "-" }
                         if (url != null) {
                             Glide.with(this@ProductDetailFragment)
