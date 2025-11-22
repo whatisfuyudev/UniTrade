@@ -2,8 +2,19 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="coral_primary">#FF6F61</color>   <!-- contoh palet coral -->
-    <color name="accent_green">#2ECC71</color>    <!-- contoh CTA hijau -->
+
+    <!-- Palet coral/orange (accent warm) -->
+    <color name="coral_primary">#FF6F61</color>      <!-- coral utama -->
+    <color name="coral_light">#FFF3E9</color>        <!-- latar lembut untuk slide -->
+
+    <!-- CTA hijau -->
+    <color name="accent_green">#2ECC71</color>
+
+    <!-- Bottom nav / icon colors -->
     <color name="nav_item_active">#FF6F61</color>
     <color name="nav_item_inactive">#8A8A8A</color>
+
+    <!-- Hitam abu untuk teks -->
+    <color name="text_primary">#FF1F1F1F</color>
+    <color name="text_secondary">#FF6B6B6B</color>
 </resources>

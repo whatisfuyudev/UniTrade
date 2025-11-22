@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">UniTrade</string>
+    <string name="get_started">Mulai</string>
+    <string name="next">Lanjut</string>
 </resources>

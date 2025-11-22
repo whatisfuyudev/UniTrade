@@ -73,6 +73,9 @@ dependencies {
     // helpers to use Tasks.await in coroutines for Firebase
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.1")
 
+    // DataStore
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
     // Firebase (use BOM already included)
     implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
     implementation("com.google.firebase:firebase-auth")

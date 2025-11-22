@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- File: res/layout/fragment_onboarding.xml
+     Desain: area gambar/ilustrasi di atas + kartu putih melayang di bawah yang
+     berisi title/description/dots + tombol Back/Next. Root: ConstraintLayout.
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/onboarding_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/coral_light">
+
+    <!-- Skip di pojok kanan atas -->
+    <TextView
+        android:id="@+id/tvSkip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Skip"
+        android:textColor="@color/coral_primary"
+        android:textStyle="bold"
+        android:padding="12dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- ViewPager2: tampilkan ilustrasi/visual full-width di area atas -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/vpOnboarding"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/cardBottom"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:orientation="horizontal"/>
+
+    <!-- Bottom card (melayang di atas area bawah), radius besar -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardBottom"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:cardElevation="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="@color/white">
+
+        <LinearLayout
+            android:padding="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Title sample"
+                style="?attr/textAppearanceHeadlineSmall"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="6dp"/>
+
+            <TextView
+                android:id="@+id/tvDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Deskripsi singkat onboarding..."
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="12dp"/>
+
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tabDots"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:tabIndicatorHeight="0dp"
+                app:tabIconTint="@null"
+                app:tabGravity="center"
+                app:tabMode="fixed"
+                android:layout_gravity="center"/>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="16dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnBack"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:text="Kembali"
+                    android:visibility="gone"
+                    app:strokeColor="@color/coral_primary"
+                    app:strokeWidth="1dp"
+                    android:textColor="@color/coral_primary"
+                    android:layout_marginEnd="12dp"/>
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnNext"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:text="Lanjut"
+                    app:cornerRadius="8dp"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:backgroundTint="@color/accent_green"
+                    android:textColor="@color/white" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
