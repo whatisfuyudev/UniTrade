@@ -4,7 +4,7 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/splashFragment">
 
-    <!-- existing startDestination is splashFragment -->
+    <!-- Splash -->
     <fragment
         android:id="@+id/splashFragment"
         android:name="com.unitrade.unitrade.SplashFragment"
@@ -13,6 +13,7 @@
         <action android:id="@+id/action_splash_to_main" app:destination="@id/main_nav" />
     </fragment>
 
+    <!-- Onboarding (only first run) -->
     <fragment
         android:id="@+id/onboardingFragment"
         android:name="com.unitrade.unitrade.OnboardingFragment"
@@ -24,7 +25,7 @@
             app:popUpToInclusive="true"/>
     </fragment>
 
-
+    <!-- Auth screens -->
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.unitrade.unitrade.LoginFragment"
@@ -37,7 +38,6 @@
         android:id="@+id/registerFragment"
         android:name="com.unitrade.unitrade.RegisterFragment"
         android:label="Register" >
-        <!-- actions requested: register -> login, register -> main -->
         <action
             android:id="@+id/action_register_to_login"
             app:destination="@id/loginFragment" />
@@ -46,6 +46,7 @@
             app:destination="@id/main_nav" />
     </fragment>
 
+    <!-- Main nested navigation -->
     <navigation
         android:id="@+id/main_nav"
         app:startDestination="@id/homeFragment">
@@ -54,22 +55,48 @@
             android:id="@+id/homeFragment"
             android:name="com.unitrade.unitrade.HomeFragment"
             android:label="Home" >
-            <!-- Actions from Home -->
-            <!-- action_home_to_search -> currently points to productListFragment (adjust later if you create SearchFragment) -->
+            <!-- dari Home -> Search / AddProduct / ProductDetail -->
             <action
                 android:id="@+id/action_home_to_search"
                 app:destination="@id/productListFragment" />
-            <!-- action_home_to_addProduct -> currently points to productListFragment
-                 Replace destination with AddEditProductFragment id when available -->
             <action
                 android:id="@+id/action_home_to_addProduct"
                 app:destination="@id/productListFragment" />
+            <!-- action ke detail dengan arg productId -->
+            <action
+                android:id="@+id/action_home_to_productDetail"
+                app:destination="@id/productDetailFragment">
+                <argument
+                    android:name="productId"
+                    app:argType="string" />
+            </action>
         </fragment>
 
         <fragment
             android:id="@+id/productListFragment"
             android:name="com.unitrade.unitrade.ProductListFragment"
-            android:label="Products" />
-        <!-- more fragments will be added in later stages -->
+            android:label="Products" >
+            <!-- dari list ke detail -->
+            <action
+                android:id="@+id/action_productList_to_productDetail"
+                app:destination="@id/productDetailFragment">
+                <argument
+                    android:name="productId"
+                    app:argType="string" />
+            </action>
+        </fragment>
+
+        <!-- Product detail (terima productId sebagai arg) -->
+        <fragment
+            android:id="@+id/productDetailFragment"
+            android:name="com.unitrade.unitrade.ProductDetailFragment"
+            android:label="ProductDetail" >
+            <argument
+                android:name="productId"
+                app:argType="string"
+                android:defaultValue="" />
+        </fragment>
+
+        <!-- Tambahkan fragment lain di sini sesuai kebutuhan -->
     </navigation>
 </navigation>
