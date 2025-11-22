@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="96dp"
+    android:layout_height="96dp"
+    android:layout_margin="6dp">
+
+    <ImageView
+        android:id="@+id/imgPreview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:contentDescription="Preview foto produk"
+        android:background="@drawable/rounded_image_bg" />
+
+    <ImageButton
+        android:id="@+id/btnRemove"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_margin="6dp"
+        android:layout_gravity="top|end"
+        android:background="@drawable/circle_button_bg"
+        android:contentDescription="Hapus foto"
+        android:padding="4dp"
+        android:src="@drawable/ic_close"
+        app:tint="@android:color/white" />
+
+</FrameLayout>

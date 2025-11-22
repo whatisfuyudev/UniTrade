@@ -18,21 +18,24 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.PropertyName
 import com.google.firebase.firestore.ServerTimestamp
 
+/**
+ * File: app/src/main/java/com/unitrade/unitrade/data/model/Product.kt
+ * Model data untuk dokumen "products" di Firestore.
+ */
 data class Product(
-    val productId: String = "",
-    val ownerId: String = "",
-    val title: String = "",
-    val description: String = "",
-    val category: String = "",
-    val condition: String = "",
-    val price: Double = 0.0,
-    val imageUrls: List<String> = emptyList(),
-    // ubah menjadi var agar Firestore dapat mem-set nilainya
+    var productId: String = "",
+    var ownerId: String = "",
+    var title: String = "",
+    var description: String = "",
+    var category: String = "",
+    var condition: String = "",
+    var price: Double = 0.0,
+    var imageUrls: List<String> = emptyList(),
     @get:PropertyName("isActive") @set:PropertyName("isActive")
     var isActive: Boolean = true,
     @ServerTimestamp
-    val createdAt: Timestamp? = null,
+    var createdAt: Timestamp? = null, // var agar Firestore bisa set
     @ServerTimestamp
-    val updatedAt: Timestamp? = null,
-    val action: String? = null
+    var updatedAt: Timestamp? = null,
+    var action: String = "Jual Beli"
 )

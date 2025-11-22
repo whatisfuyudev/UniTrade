@@ -7,7 +7,7 @@
         android:title="Beranda" />
 
     <item
-        android:id="@+id/navigation_add"
+        android:id="@+id/scroll_add_product"
         android:icon="@drawable/ic_add"
         android:title="Tambah" />
 
