@@ -7,11 +7,14 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object FirebaseModule {
+    private const val CLOUD_NAME = "dxfrr8lsd"
+
     @Provides
     @Singleton
     fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
@@ -24,12 +27,23 @@ object FirebaseModule {
     @Singleton
     fun provideStorage(): FirebaseStorage = FirebaseStorage.getInstance()
 
-    // Cloudinary config - fill with your cloud name & unsigned preset
+    // uploader untuk produk (preset unsigned yang asset folder-nya
+    // diset ke unitrade-products-pictures atau tanpa asset folder)
     @Provides
     @Singleton
-    fun provideCloudinaryUploader(): CloudinaryUploader {
-        val cloudName = "dxfrr8lsd"          // replace with your value
-        val uploadPreset = "unitrade"  // replace with your unsigned preset name
-        return CloudinaryUploader(cloudName, uploadPreset)
+    @Named("cloudinary_products")
+    fun provideCloudinaryProducts(): CloudinaryUploader {
+        val uploadPreset = "unitrade_products_preset" // ganti sesuai nama preset produk di console
+        return CloudinaryUploader(CLOUD_NAME, uploadPreset)
+    }
+
+    // uploader untuk chat (preset unsigned yang asset folder-nya
+    // diset ke unitrade-chat-pictures atau tanpa asset folder)
+    @Provides
+    @Singleton
+    @Named("cloudinary_chat")
+    fun provideCloudinaryChat(): CloudinaryUploader {
+        val uploadPreset = "unitrade_chat_preset" // ganti sesuai nama preset chat di console
+        return CloudinaryUploader(CLOUD_NAME, uploadPreset)
     }
 }

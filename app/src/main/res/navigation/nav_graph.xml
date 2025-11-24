@@ -58,9 +58,10 @@
             <action
                 android:id="@+id/action_home_to_search"
                 app:destination="@id/productListFragment" />
+            <!-- ubah fungsi action di homeFragment -->
             <action
                 android:id="@+id/action_home_to_addProduct"
-                app:destination="@id/productListFragment" />
+                app:destination="@id/addEditProductFragment" />
             <action
                 android:id="@+id/action_home_to_productDetail"
                 app:destination="@id/productDetailFragment">
@@ -124,6 +125,12 @@
                 <argument android:name="chatId" app:argType="string" />
             </action>
         </fragment>
+
+        <!-- di dalam <navigation android:id="@+id/main_nav" ...> -->
+        <fragment
+            android:id="@+id/addEditProductFragment"
+            android:name="com.unitrade.unitrade.AddEditProductFragment"
+            android:label="Add/Edit Product" />
 
         <!-- Tambahkan fragment lain di sini sesuai kebutuhan -->
     </navigation>

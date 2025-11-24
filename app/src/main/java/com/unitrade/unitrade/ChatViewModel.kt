@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.File
+import javax.inject.Named
 import javax.inject.Inject
 
 /**
@@ -27,7 +28,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ChatViewModel @Inject constructor(
     private val repository: ChatRepository,
-    private val uploader: CloudinaryUploader
+    @Named("cloudinary_chat") private val uploader: CloudinaryUploader
 ) : ViewModel() {
 
     // threads yang dapat di-observe oleh UI

@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.tasks.await
 import java.io.File
+import javax.inject.Named
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,9 +31,9 @@ import javax.inject.Singleton
  */
 @Singleton
 class ProductRepository @Inject constructor(
-    private val firestore: FirebaseFirestore,
-    private val auth: FirebaseAuth,
-    private val cloudinaryUploader: CloudinaryUploader
+    private val firestore: com.google.firebase.firestore.FirebaseFirestore,
+    private val auth: com.google.firebase.auth.FirebaseAuth,
+    @Named("cloudinary_products") private val cloudinaryUploader: CloudinaryUploader
 ) {
     private val productsColl get() = firestore.collection("products")
 
