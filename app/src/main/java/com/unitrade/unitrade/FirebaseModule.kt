@@ -10,6 +10,8 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Named
 import javax.inject.Singleton
 
+// Tambah imports
+
 @Module
 @InstallIn(SingletonComponent::class)
 object FirebaseModule {
@@ -27,23 +29,28 @@ object FirebaseModule {
     @Singleton
     fun provideStorage(): FirebaseStorage = FirebaseStorage.getInstance()
 
-    // uploader untuk produk (preset unsigned yang asset folder-nya
-    // diset ke unitrade-products-pictures atau tanpa asset folder)
     @Provides
     @Singleton
     @Named("cloudinary_products")
     fun provideCloudinaryProducts(): CloudinaryUploader {
-        val uploadPreset = "unitrade_products_preset" // ganti sesuai nama preset produk di console
+        val uploadPreset = "unitrade_products_preset"
         return CloudinaryUploader(CLOUD_NAME, uploadPreset)
     }
 
-    // uploader untuk chat (preset unsigned yang asset folder-nya
-    // diset ke unitrade-chat-pictures atau tanpa asset folder)
     @Provides
     @Singleton
     @Named("cloudinary_chat")
     fun provideCloudinaryChat(): CloudinaryUploader {
-        val uploadPreset = "unitrade_chat_preset" // ganti sesuai nama preset chat di console
+        val uploadPreset = "unitrade_chat_preset"
+        return CloudinaryUploader(CLOUD_NAME, uploadPreset)
+    }
+
+    // NEW: profile uploader (unsigned preset with folder unitrade-profile-pictures)
+    @Provides
+    @Singleton
+    @Named("cloudinary_profile")
+    fun provideCloudinaryProfile(): CloudinaryUploader {
+        val uploadPreset = "unitrade_profile_preset" // ganti sesuai preset yang kamu buat di Cloudinary
         return CloudinaryUploader(CLOUD_NAME, uploadPreset)
     }
 }
