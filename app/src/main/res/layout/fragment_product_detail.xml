@@ -10,18 +10,16 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Hero image -->
+        <!-- Image pager (multiple images) -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="300dp"
             android:background="@color/white">
 
-            <ImageView
-                android:id="@+id/imgHero"
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/vpImages"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:contentDescription="Foto produk" />
+                android:layout_height="match_parent" />
 
             <!-- Back icon -->
             <ImageButton
@@ -101,7 +99,64 @@
                     android:ellipsize="end"
                     android:maxLines="6" />
 
-                <!-- Action buttons: Chat (primary) & Save (secondary or placeholder) -->
+                <!-- Seller info: avatar + name/faculty/contact -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="12dp">
+
+                    <ImageView
+                        android:id="@+id/imgSellerAvatar"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:src="@drawable/placeholder"
+                        android:scaleType="centerCrop"
+                        android:contentDescription="Foto penjual"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/circle_bg" />
+
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <TextView
+                            android:id="@+id/tvSellerName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Nama Penjual"
+                            style="?attr/textAppearanceBodyLarge" />
+
+                        <TextView
+                            android:id="@+id/tvSellerFaculty"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Fakultas"
+                            style="?attr/textAppearanceBodySmall" />
+
+                        <TextView
+                            android:id="@+id/tvSellerContact"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Kontak"
+                            style="?attr/textAppearanceLabelSmall" />
+                    </LinearLayout>
+
+                    <!-- action (Barter / Jual Beli) -->
+                    <TextView
+                        android:id="@+id/tvAction"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Jual Beli"
+                        android:padding="6dp"
+                        android:background="@drawable/chip_bg"
+                        android:layout_marginStart="8dp"/>
+                </LinearLayout>
+
+                <!-- Action button: Chat (primary) -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -112,17 +167,10 @@
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnChatSeller"
                         style="@style/Widget.MaterialComponents.Button"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
+                        android:layout_width="match_parent"
                         android:layout_height="48dp"
                         android:text="Chat Penjual" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnSave"
-                        android:layout_width="wrap_content"
-                        android:layout_height="48dp"
-                        android:layout_marginStart="12dp"
-                        android:text="Simpan" />
                 </LinearLayout>
 
             </LinearLayout>

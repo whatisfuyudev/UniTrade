@@ -1,6 +1,5 @@
 package com.unitrade.unitrade
 
-
 import android.app.AlertDialog
 import android.os.Bundle
 import android.view.View
@@ -17,15 +16,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 
-/**
- * app/src/main/java/com/unitrade/unitrade/ui/profile/MyProductsFragment.kt
- *
- * List produk milik user. Menggunakan repeatOnLifecycle untuk pemanggilan suspend yang lifecycle-safe.
- * Menampilkan semua produk yang diupload oleh user:
- * - menampilkan list produk milik user (query by ownerId)
- * - tombol Edit -> navigasi ke AddEditProductFragment dengan productId (reuse add/edit fragment)
- * - tombol Delete -> munculkan konfirmasi -> panggil ProductRepository.deleteProduct(...) dan delete image via Cloudinary (recommended via backend)
- */
 @AndroidEntryPoint
 class MyProductsFragment : Fragment(R.layout.fragment_my_products) {
 
@@ -50,12 +40,11 @@ class MyProductsFragment : Fragment(R.layout.fragment_my_products) {
                     .setTitle("Hapus produk")
                     .setMessage("Yakin ingin menghapus produk ini?")
                     .setPositiveButton("Hapus") { _, _ ->
-                        // hapus dengan coroutine singkat (tidak perlu repeatOnLifecycle)
                         lifecycleScope.launch {
                             try {
                                 productRepository.deleteProduct(product.productId, product.imageUrls)
                                 Toast.makeText(requireContext(), "Produk dihapus", Toast.LENGTH_SHORT).show()
-                                // reload
+                                // reload cepat setelah hapus
                                 loadMyProductsOnce()
                             } catch (e: Exception) {
                                 Toast.makeText(requireContext(), "Gagal menghapus: ${e.message}", Toast.LENGTH_LONG).show()
@@ -74,6 +63,9 @@ class MyProductsFragment : Fragment(R.layout.fragment_my_products) {
         binding.rvMyProducts.layoutManager = LinearLayoutManager(requireContext())
         binding.rvMyProducts.adapter = adapter
 
+        // hide empty state awal sementara menunggu data
+        binding.tvEmptyState.visibility = View.GONE
+
         // load list products in a lifecycle-safe way
         loadMyProducts()
     }
@@ -86,8 +78,12 @@ class MyProductsFragment : Fragment(R.layout.fragment_my_products) {
                 try {
                     val list = productRepository.getProductsByOwner(uid)
                     adapter.submitList(list)
+                    // tampilkan teks kosong hanya jika list kosong
+                    binding.tvEmptyState.visibility = if (list.isNullOrEmpty()) View.VISIBLE else View.GONE
                 } catch (e: Exception) {
                     Toast.makeText(requireContext(), "Gagal memuat produk: ${e.message}", Toast.LENGTH_LONG).show()
+                    // jika gagal, tampilkan teks kosong supaya UI informatif
+                    binding.tvEmptyState.visibility = View.VISIBLE
                 }
             }
         }
@@ -100,8 +96,10 @@ class MyProductsFragment : Fragment(R.layout.fragment_my_products) {
             try {
                 val list = productRepository.getProductsByOwner(uid)
                 adapter.submitList(list)
+                binding.tvEmptyState.visibility = if (list.isNullOrEmpty()) View.VISIBLE else View.GONE
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Gagal memuat produk: ${e.message}", Toast.LENGTH_LONG).show()
+                binding.tvEmptyState.visibility = View.VISIBLE
             }
         }
     }

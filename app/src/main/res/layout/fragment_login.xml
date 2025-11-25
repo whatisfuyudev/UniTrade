@@ -79,18 +79,6 @@
             app:iconGravity="textStart"
             android:contentDescription="Tombol Login" />
 
-        <TextView
-            android:id="@+id/tvForgotPassword"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Lupa password?"
-            android:textAlignment="center"
-            android:padding="6dp"
-            android:layout_marginBottom="8dp"
-            android:textColor="?attr/colorPrimaryVariant"
-            android:clickable="true"
-            android:focusable="true" />
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

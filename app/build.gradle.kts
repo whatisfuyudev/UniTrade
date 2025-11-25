@@ -120,5 +120,4 @@ dependencies {
     implementation("de.hdodenhof:circleimageview:3.1.0")
 
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:<latest-version>")
-
 }

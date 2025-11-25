@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/chip_bg.xml
+     Chip style: rounded rectangle + stroke + ripple.
+     - background: ?attr/colorSurface (atau ganti ke ?attr/colorPrimarySurface)
+     - stroke: memanfaatkan ?attr/colorOnSurface sebagai warna stroke (lihat tema)
+-->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="?attr/colorControlHighlight">
+
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="?attr/colorSurface" />
+            <!-- sudut membulat -->
+            <corners android:radius="12dp" />
+            <!-- garis pembatas tipis; jika ingin lebih subtle gunakan alpha pada warna di colors.xml -->
+            <stroke android:width="1dp" android:color="?attr/colorOnSurface" />
+            <!-- padding internal bisa diatur di layout; jika perlu tambahkan <padding> di sini -->
+        </shape>
+    </item>
+
+</ripple>

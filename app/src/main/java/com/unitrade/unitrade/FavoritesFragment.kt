@@ -16,17 +16,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 
-/**
- * app/src/main/java/com/unitrade/unitrade/ui/profile/FavoritesFragment.kt
- *
- * Menampilkan daftar produk favorit user:
- * - ambil favorites array dari user doc (suspend)
- * - query productRepository.getProductsByIds(...) untuk ambil produk terkait (suspend)
- * - adapter: klik item -> navigasi ke ProductDetailFragment
- *
- * Perubahan:
- * - mengganti deprecated launchWhenStarted dengan lifecycleScope + repeatOnLifecycle
- */
 @AndroidEntryPoint
 class FavoritesFragment : Fragment(R.layout.fragment_favorites) {
 
@@ -42,7 +31,6 @@ class FavoritesFragment : Fragment(R.layout.fragment_favorites) {
         _binding = FragmentFavoritesBinding.bind(view)
 
         adapter = com.unitrade.unitrade.ProductAdapter { product ->
-            // navigate to product detail using argument productId
             val bundle = Bundle().apply { putString("productId", product.productId) }
             findNavController().navigate(R.id.productDetailFragment, bundle)
         }
@@ -60,28 +48,48 @@ class FavoritesFragment : Fragment(R.layout.fragment_favorites) {
                 val uid = userRepository.currentUid()
                 if (uid == null) {
                     Toast.makeText(requireContext(), "Silakan login", Toast.LENGTH_SHORT).show()
+                    // tampilkan teks kosong juga
+                    binding.rvFavorites.visibility = View.GONE
+                    binding.tvEmptyFavorites.visibility = View.VISIBLE
                     return@repeatOnLifecycle
                 }
 
                 try {
-                    // getCurrentUserOnce() diasumsikan suspend
                     val user = userRepository.getCurrentUserOnce()
                     if (user == null) {
                         Toast.makeText(requireContext(), "Gagal memuat data user", Toast.LENGTH_SHORT).show()
+                        binding.rvFavorites.visibility = View.GONE
+                        binding.tvEmptyFavorites.visibility = View.VISIBLE
                         return@repeatOnLifecycle
                     }
 
                     if (user.favorites.isNullOrEmpty()) {
+                        // tidak ada favorit
                         adapter.submitList(emptyList())
+                        binding.rvFavorites.visibility = View.GONE
+                        binding.tvEmptyFavorites.visibility = View.VISIBLE
                         return@repeatOnLifecycle
                     }
 
-                    // gunakan fungsi baru di ProductRepository untuk ambil produk by ids
+                    // ambil produk dari repository
                     val products = productRepository.getProductsByIds(user.favorites)
-                    adapter.submitList(products)
+
+                    if (products.isNullOrEmpty()) {
+                        // jika repository tidak menemukan produk apapun dari id favorit
+                        adapter.submitList(emptyList())
+                        binding.rvFavorites.visibility = View.GONE
+                        binding.tvEmptyFavorites.visibility = View.VISIBLE
+                    } else {
+                        // ada produk, tampilkan list dan sembunyikan teks
+                        adapter.submitList(products)
+                        binding.rvFavorites.visibility = View.VISIBLE
+                        binding.tvEmptyFavorites.visibility = View.GONE
+                    }
                 } catch (e: Exception) {
                     e.printStackTrace()
                     Toast.makeText(requireContext(), "Gagal memuat favorit: ${e.message}", Toast.LENGTH_LONG).show()
+                    binding.rvFavorites.visibility = View.GONE
+                    binding.tvEmptyFavorites.visibility = View.VISIBLE
                 }
             }
         }
