@@ -5,4 +5,14 @@
     <string name="product_image">Foto produk</string>
     <string name="edit">Edit</string>
     <string name="delete">Hapus</string>
+    
+    <!-- AI Chatbot -->
+    <string name="ai_chatbot_title">FAQ Assistant</string>
+    <string name="ai_chatbot_hint">Ask about UniTrade…</string>
+    <string name="ai_chatbot_send">Send</string>
+    <string name="ai_chatbot_clear_history">Clear History</string>
+    <string name="ai_chatbot_clear_confirm_title">Clear Chat History</string>
+    <string name="ai_chatbot_clear_confirm_message">Are you sure you want to clear all chat history? This cannot be undone.</string>
+    <string name="ai_chatbot_clear_confirm_positive">Clear</string>
+    <string name="ai_chatbot_clear_confirm_negative">Cancel</string>
 </resources>
