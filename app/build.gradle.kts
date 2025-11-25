@@ -117,4 +117,8 @@ dependencies {
     // PHOTO VIEW untuk pinch-to-zoom
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
 
+    implementation("de.hdodenhof:circleimageview:3.1.0")
+
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:<latest-version>")
+
 }

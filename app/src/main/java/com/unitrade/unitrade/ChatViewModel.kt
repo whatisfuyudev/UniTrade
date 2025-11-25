@@ -16,14 +16,10 @@ import javax.inject.Inject
 /**
  * app/src/main/java/com/unitrade/unitrade/ui/chat/ChatViewModel.kt
  *
- * ViewModel untuk Chat UI:
- * - expose threads: StateFlow<List<ChatThread>> sehingga Fragment dapat meng-collectnya.
- * - gunakan ChatRepository.observeThreadsForUser(uid) untuk mengisi threads.
- * - menyediakan fungsi untuk mengirim teks dan gambar.
- *
- * Pastikan ChatRepository memiliki method:
- *   fun observeThreadsForUser(uid: String): Flow<List<ChatThread>>
- * dan bahwa ChatThread model berada di package yang sesuai.
+ * ViewModel untuk Chat:
+ * - threads: StateFlow<List<ChatThread>>
+ * - sendTextMessage(chatId, text)
+ * - sendImageMessage(chatId, file): UploadResult digunakan -> ambil secureUrl -> kirim message dengan imageUrl
  */
 @HiltViewModel
 class ChatViewModel @Inject constructor(
@@ -31,16 +27,13 @@ class ChatViewModel @Inject constructor(
     @Named("cloudinary_chat") private val uploader: CloudinaryUploader
 ) : ViewModel() {
 
-    // threads yang dapat di-observe oleh UI
     private val _threads = MutableStateFlow<List<com.unitrade.unitrade.ChatThread>>(emptyList())
     val threads: StateFlow<List<com.unitrade.unitrade.ChatThread>> = _threads
 
     init {
-        // mulai collect threads bila user sudah login
         val uid = repository.auth.currentUser?.uid
         if (uid != null) {
             viewModelScope.launch {
-                // repository.observeThreadsForUser(uid) harus mengembalikan Flow<List<ChatThread>>
                 repository.observeThreadsForUser(uid).collect { list ->
                     _threads.value = list
                 }
@@ -63,11 +56,15 @@ class ChatViewModel @Inject constructor(
     }
 
     /**
-     * Upload image to Cloudinary then save message with imageUrl
+     * Upload image to Cloudinary (returns UploadResult) then save message with imageUrl = result.secureUrl
      */
     suspend fun sendImageMessage(chatId: String, file: File): Boolean {
         val uid = repository.auth.currentUser?.uid ?: return false
-        val url = uploader.uploadImage(file, folder = "unitrade-chat-pictures") ?: return false
+
+        // UploadResult? returned by uploader.uploadImage
+        val result = uploader.uploadImage(file, folder = "unitrade-chat-pictures") ?: return false
+        val url = result.secureUrl
+
         val msg = ChatMessage(
             messageId = "",
             senderId = uid,

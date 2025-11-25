@@ -2,4 +2,7 @@
     <string name="app_name">UniTrade</string>
     <string name="get_started">Mulai</string>
     <string name="next">Lanjut</string>
+    <string name="product_image">Foto produk</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Hapus</string>
 </resources>

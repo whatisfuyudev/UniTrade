@@ -183,3 +183,4 @@ class CloudinaryUploader(
         return digest.joinToString("") { "%02x".format(it) }
     }
 }
+

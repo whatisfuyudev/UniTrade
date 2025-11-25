@@ -111,14 +111,28 @@
             <argument android:name="chatId" app:argType="string" android:defaultValue="" />
         </fragment>
 
-        <!-- Profile fragment (sementara berisi tombol untuk membuka chat) -->
+        <!-- Profile (point to new package path) -->
         <fragment
             android:id="@+id/profileFragment"
             android:name="com.unitrade.unitrade.ProfileFragment"
             android:label="Profile" >
+            <!-- new actions requested by you -->
             <action
-                android:id="@+id/action_profile_to_chatList"
+                android:id="@+id/action_profile_to_editProfile"
+                app:destination="@id/editProfileFragment" />
+            <action
+                android:id="@+id/action_profile_to_favoritesFragment"
+                app:destination="@id/favoritesFragment" />
+            <action
+                android:id="@+id/action_profile_to_myProductsFragment"
+                app:destination="@id/myProductsFragment" />
+            <action
+                android:id="@+id/action_profile_to_chatListFragment"
                 app:destination="@id/chatListFragment" />
+            <action
+                android:id="@+id/action_profile_to_login"
+                app:destination="@id/loginFragment" />
+            <!-- keep older chatDetail action if you still need it -->
             <action
                 android:id="@+id/action_profile_to_chatDetail"
                 app:destination="@id/chatDetailFragment">
@@ -126,11 +140,28 @@
             </action>
         </fragment>
 
-        <!-- di dalam <navigation android:id="@+id/main_nav" ...> -->
+        <!-- Add/Edit product fragment -->
         <fragment
             android:id="@+id/addEditProductFragment"
             android:name="com.unitrade.unitrade.AddEditProductFragment"
             android:label="Add/Edit Product" />
+
+        <!-- placeholders for profile-related destinations -->
+        <!-- If you already implemented these fragments, replace android:name with your actual class path -->
+        <fragment
+            android:id="@+id/editProfileFragment"
+            android:name="com.unitrade.unitrade.EditProfileFragment"
+            android:label="EditProfile" />
+
+        <fragment
+            android:id="@+id/favoritesFragment"
+            android:name="com.unitrade.unitrade.FavoritesFragment"
+            android:label="Favorites" />
+
+        <fragment
+            android:id="@+id/myProductsFragment"
+            android:name="com.unitrade.unitrade.MyProductsFragment"
+            android:label="MyProducts" />
 
         <!-- Tambahkan fragment lain di sini sesuai kebutuhan -->
     </navigation>

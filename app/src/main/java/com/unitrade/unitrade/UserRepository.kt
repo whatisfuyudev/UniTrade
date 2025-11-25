@@ -4,12 +4,12 @@ package com.unitrade.unitrade
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
-import com.unitrade.unitrade.UserModel
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
+ *
  * app/src/main/java/com/unitrade/unitrade/data/repository/UserRepository.kt
  *
  * Repository untuk operasi user: ambil profile, update profile, update favorites.
