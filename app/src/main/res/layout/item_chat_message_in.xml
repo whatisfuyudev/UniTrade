@@ -9,12 +9,14 @@
     android:gravity="start">
 
     <!-- avatar placeholder (optional) -->
-    <ImageView
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/imgAvatarLeft"
         android:layout_width="36dp"
         android:layout_height="36dp"
         android:layout_marginEnd="8dp"
-        android:src="@mipmap/ic_launcher_round"
+        android:src="@drawable/placeholder"
+        android:scaleType="centerCrop"
+        app:shapeAppearanceOverlay="@style/CircleImageView"
         android:contentDescription="Avatar" />
 
     <LinearLayout

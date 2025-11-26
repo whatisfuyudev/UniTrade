@@ -20,6 +20,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.io.File
+import javax.inject.Inject
 
 /**
  * app/src/main/java/com/unitrade/unitrade/ChatDetailFragment.kt
@@ -40,6 +41,9 @@ class ChatDetailFragment : Fragment(R.layout.fragment_chat_detail) {
     private val binding get() = _binding!!
 
     private val viewModel: ChatViewModel by viewModels()
+    
+    @Inject
+    lateinit var userRepository: UserRepository
 
     // adapter typed as our ChatMessageAdapter for normal case
     private lateinit var adapter: ChatMessageAdapter
@@ -63,7 +67,7 @@ class ChatDetailFragment : Fragment(R.layout.fragment_chat_detail) {
         }
 
         // Initialize adapter and attach immediately
-        adapter = ChatMessageAdapter(requireContext())
+        adapter = ChatMessageAdapter(requireContext(), userRepository)
         binding.rvMessages.layoutManager = LinearLayoutManager(requireContext())
         binding.rvMessages.adapter = adapter
 

@@ -15,6 +15,10 @@ import com.bumptech.glide.Glide
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.unitrade.unitrade.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -30,8 +34,10 @@ import java.util.*
  * fungsi submitMessageList(messages: List<ChatMessage>) yang mengubah daftar pesan
  * menjadi item dengan header tanggal.
  */
-class ChatMessageAdapter(private val context: Context) :
-    ListAdapter<ChatListItem, RecyclerView.ViewHolder>(ChatListItemDiff()) {
+class ChatMessageAdapter(
+    private val context: Context,
+    private val userRepository: UserRepository
+) : ListAdapter<ChatListItem, RecyclerView.ViewHolder>(ChatListItemDiff()) {
 
     companion object {
         private const val TYPE_DATE = 0
@@ -111,6 +117,7 @@ class ChatMessageAdapter(private val context: Context) :
         private val tvText: TextView = view.findViewById(R.id.tvMessageTextIn)
         private val img: ImageView = view.findViewById(R.id.imgMessageIn)
         private val tvTime: TextView = view.findViewById(R.id.tvTimeIn)
+        private val imgAvatar: ImageView = view.findViewById(R.id.imgAvatarLeft)
 
         fun bind(msg: ChatMessage) {
             if (!msg.text.isNullOrBlank()) {
@@ -134,6 +141,9 @@ class ChatMessageAdapter(private val context: Context) :
             }
 
             tvTime.text = formatTimestamp(msg.createdAt)
+            
+            // Load sender's profile photo
+            loadUserPhoto(msg.senderId, imgAvatar)
         }
     }
 
@@ -141,6 +151,7 @@ class ChatMessageAdapter(private val context: Context) :
         private val tvText: TextView = view.findViewById(R.id.tvMessageTextOut)
         private val img: ImageView = view.findViewById(R.id.imgMessageOut)
         private val tvTime: TextView = view.findViewById(R.id.tvTimeOut)
+        private val imgAvatar: ImageView = view.findViewById(R.id.imgAvatarRight)
 
         fun bind(msg: ChatMessage) {
             if (!msg.text.isNullOrBlank()) {
@@ -164,6 +175,9 @@ class ChatMessageAdapter(private val context: Context) :
             }
 
             tvTime.text = formatTimestamp(msg.createdAt)
+            
+            // Load current user's profile photo
+            loadUserPhoto(msg.senderId, imgAvatar)
         }
     }
 
@@ -187,6 +201,35 @@ class ChatMessageAdapter(private val context: Context) :
         val date = ts.toDate()
         val sdf = SimpleDateFormat("HH:mm", Locale("in", "ID"))
         return sdf.format(date)
+    }
+    
+    private fun loadUserPhoto(userId: String, imageView: ImageView) {
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val user = withContext(Dispatchers.IO) {
+                    userRepository.getUserOnce(userId)
+                }
+                
+                val photoUrl = user?.photoUrl?.takeIf { it != "-" && it.isNotBlank() }
+                if (photoUrl != null) {
+                    Glide.with(imageView.context)
+                        .load(photoUrl)
+                        .placeholder(R.drawable.placeholder)
+                        .circleCrop()
+                        .into(imageView)
+                } else {
+                    Glide.with(imageView.context)
+                        .load(R.drawable.placeholder)
+                        .circleCrop()
+                        .into(imageView)
+                }
+            } catch (e: Exception) {
+                Glide.with(imageView.context)
+                    .load(R.drawable.placeholder)
+                    .circleCrop()
+                    .into(imageView)
+            }
+        }
     }
 }
 

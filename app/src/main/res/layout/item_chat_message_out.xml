@@ -59,11 +59,13 @@
     </LinearLayout>
 
     <!-- optional avatar on right (or hide) -->
-    <ImageView
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/imgAvatarRight"
         android:layout_width="36dp"
         android:layout_height="36dp"
         android:layout_marginStart="8dp"
-        android:src="@mipmap/ic_launcher_round"
+        android:src="@drawable/placeholder"
+        android:scaleType="centerCrop"
+        app:shapeAppearanceOverlay="@style/CircleImageView"
         android:contentDescription="Avatar" />
 </LinearLayout>
