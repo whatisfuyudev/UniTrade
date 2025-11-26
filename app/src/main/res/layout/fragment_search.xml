@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- File: res/layout/fragment_search.xml
+     Fungsi: UI untuk pencarian produk (input + RecyclerView hasil + progress + pesan kosong di tengah)
+     Catatan:
+     - tvEmpty diletakkan sebagai overlay di tengah (agar selalu terlihat)
+     - rvResults punya paddingBottom agar tidak tertutup BottomNav / FAB
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/searchToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorSurface"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        android:title="Cari Produk" />
+
+    <!-- Konten utama diletakkan di FrameLayout yang mengikuti AppBarLayout behavior -->
+    <FrameLayout
+        android:id="@+id/content_frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:padding="12dp"
+        android:layout_marginTop="?attr/actionBarSize">
+
+        <!-- Column: input + progress + recycler (recycler weight agar fleksibel) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Cari nama atau deskripsi">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etSearch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <ProgressBar
+                android:id="@+id/progress"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:visibility="gone" />
+
+            <!-- RecyclerView yang mengambil sisa ruang. paddingBottom untuk FAB/BottomNav -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvResults"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:paddingTop="8dp"
+                android:paddingBottom="112dp"
+                android:clipToPadding="false"
+                tools:listitem="@layout/item_product_card" />
+            <!-- android:paddingBottom="112dp" cukup besar untuk FAB + bottom nav -->
+        </LinearLayout>
+
+        <!-- Overlay message: tampil di tengah layar saat tidak ada hasil -->
+        <TextView
+            android:id="@+id/tvEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:padding="16dp"
+            android:text="Tidak ada hasil"
+            android:visibility="gone" />
+
+    </FrameLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
