@@ -19,7 +19,7 @@
             android:layout_height="96dp"
             android:layout_gravity="center_horizontal"
             android:contentDescription="@string/app_name"
-            android:src="@mipmap/ic_launcher_round"
+            android:src="@drawable/ic_unitrade_oren"
             android:layout_marginBottom="16dp" />
 
         <TextView

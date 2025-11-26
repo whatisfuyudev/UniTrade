@@ -52,7 +52,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:srcCompat="@drawable/ic_live_help"
-        android:contentDescription="Tambah produk"
+        android:contentDescription="FAQ Chatbot"
         app:tint="@android:color/white"
         app:backgroundTint="@color/btnOrange"
         app:layout_anchor="@id/swipeRefresh"

@@ -15,7 +15,7 @@ class AIChatbotRepository @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth
 ) {
-    private val apiKey = "AIzaSyB1379HBhaXHlh2g3wUpPhKyuj6WO8cLcE"
+    private val apiKey = "VALID_GOOGLE_AI_API_KEY"
     
     private val generativeModel = GenerativeModel(
         modelName = "models/gemini-2.5-flash",

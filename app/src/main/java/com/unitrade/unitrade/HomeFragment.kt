@@ -79,10 +79,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     showFilterDialog()
                     true
                 }
-                R.id.action_ai_chatbot -> {
-                    findNavController().navigate(R.id.action_home_to_aiChatbot)
-                    true
-                }
                 else -> false
             }
         }
@@ -118,7 +114,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun setupFab() {
         binding.fabAddProduct.setOnClickListener {
-            findNavController().navigate(R.id.action_home_to_addProduct)
+            findNavController().navigate(R.id.action_home_to_aiChatbot)
         }
     }
 

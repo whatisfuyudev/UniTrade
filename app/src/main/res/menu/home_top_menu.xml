@@ -13,9 +13,4 @@
         android:title="Filter"
         android:icon="@drawable/ic_filter_list"
         app:showAsAction="ifRoom" />
-
-    <item
-        android:id="@+id/action_ai_chatbot"
-        android:title="FAQ Assistant"
-        app:showAsAction="never" />
 </menu>
