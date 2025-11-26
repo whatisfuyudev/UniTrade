@@ -43,6 +43,7 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
     private val binding get() = _binding!!
 
     @Inject lateinit var productRepository: ProductRepository
+    @Inject lateinit var auth: com.google.firebase.auth.FirebaseAuth
 
     // Max images
     private val MAX_IMAGES = 6
@@ -108,6 +109,13 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentAddEditProductBinding.bind(view)
+
+        // Check if user is logged in
+        if (auth.currentUser == null) {
+            Toast.makeText(requireContext(), "Silakan login terlebih dahulu", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.loginFragment)
+            return
+        }
 
         // check arg productId (navigate from MyProductsFragment)
         editingProductId = arguments?.getString("productId")
@@ -388,7 +396,8 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
                     val savedProductId = productRepository.addProduct(product, imageFiles, "unitrade-products-pictures")
                     Toast.makeText(requireContext(), "Produk tersimpan (id: $savedProductId)", Toast.LENGTH_LONG).show()
                 }
-                findNavController().popBackStack()
+                // Navigate back to home safely
+                findNavController().popBackStack(R.id.homeFragment, false)
             } catch (e: Exception) {
                 e.printStackTrace()
                 Toast.makeText(requireContext(), "Gagal menyimpan produk: ${e.message}", Toast.LENGTH_LONG).show()

@@ -83,6 +83,15 @@ class ChatListFragment : Fragment(R.layout.fragment_chat_list) {
                 }
 
                 adapter.setItems(list)
+                
+                // Show/hide empty state
+                if (list.isEmpty()) {
+                    binding.tvEmptyChat.visibility = View.VISIBLE
+                    binding.rvThreads.visibility = View.GONE
+                } else {
+                    binding.tvEmptyChat.visibility = View.GONE
+                    binding.rvThreads.visibility = View.VISIBLE
+                }
             }
         }
     }

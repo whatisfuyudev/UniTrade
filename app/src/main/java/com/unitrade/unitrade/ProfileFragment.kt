@@ -39,12 +39,22 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     // repository di-inject via Hilt
     @Inject
     lateinit var userRepository: UserRepository
+    
+    @Inject
+    lateinit var auth: com.google.firebase.auth.FirebaseAuth
 
     // reuse AuthViewModel yang sudah ada untuk logout
     private val authViewModel: AuthViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentProfileBinding.bind(view)
+
+        // Check if user is logged in
+        if (auth.currentUser == null) {
+            Toast.makeText(requireContext(), "Silakan login terlebih dahulu", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.loginFragment)
+            return
+        }
 
         // setup button listeners
         binding.btnEditProfile.setOnClickListener {

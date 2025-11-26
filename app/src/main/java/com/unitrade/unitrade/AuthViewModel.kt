@@ -16,10 +16,10 @@ class AuthViewModel @Inject constructor(
         value = repo.getCurrentUser()
     }
 
-    fun register(email: String, password: String, name: String) {
+    fun register(email: String, password: String, name: String, extra: Map<String, Any>? = null) {
         viewModelScope.launch {
             loading.value = true
-            when (val res = repo.register(email, password, name)) {
+            when (val res = repo.register(email, password, name, extra)) {
                 is Result.Success -> {
                     currentUser.value = res.data
                     error.value = null

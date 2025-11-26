@@ -114,6 +114,7 @@
                 android:id="@+id/btnPickImages"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:backgroundTint="@color/btnOrange"
                 android:text="Pilih Foto" />
 
             <com.google.android.material.button.MaterialButton
@@ -122,6 +123,7 @@
                 android:layout_height="wrap_content"
                 android:text="Simpan"
                 style="@style/Widget.MaterialComponents.Button"
+                android:backgroundTint="@color/btnOrange"
                 android:layout_marginStart="12dp"/>
         </LinearLayout>
 

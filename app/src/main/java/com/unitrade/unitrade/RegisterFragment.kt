@@ -27,7 +27,7 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
             val pass = binding.etPassword.text.toString()
             val faculty = binding.etFaculty.text.toString().trim()
             val extra = mapOf("faculty" to faculty)
-            authViewModel.register(email, pass, name /*, extra if you change repo signature */)
+            authViewModel.register(email, pass, name, extra)
         }
 
         binding.tvToLoginFromRegister.setOnClickListener {
