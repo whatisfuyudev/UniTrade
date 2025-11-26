@@ -16,7 +16,6 @@
         android:layout_height="match_parent"
         app:navGraph="@navigation/nav_graph"
         app:defaultNavHost="true"
-        android:layout_marginBottom="@dimen/bottom_nav_height"
         tools:layout="@layout/fragment_home" />
 
     <!-- Bottom Navigation -->

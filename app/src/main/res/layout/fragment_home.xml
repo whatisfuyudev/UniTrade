@@ -57,6 +57,6 @@
         app:layout_anchor="@id/swipeRefresh"
         app:layout_anchorGravity="bottom|end"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="88dp" />
+        android:layout_marginBottom="120dp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

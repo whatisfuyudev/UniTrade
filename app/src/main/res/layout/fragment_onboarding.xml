@@ -91,7 +91,7 @@
                     android:id="@+id/btnBack"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="wrap_content"
-                    android:layout_height="44dp"
+                    android:layout_height="48dp"
                     android:text="Kembali"
                     android:visibility="gone"
                     app:strokeColor="@color/coral_primary"
@@ -107,7 +107,7 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnNext"
                     android:layout_width="wrap_content"
-                    android:layout_height="44dp"
+                    android:layout_height="48dp"
                     android:text="Lanjut"
                     app:cornerRadius="8dp"
                     android:paddingLeft="20dp"

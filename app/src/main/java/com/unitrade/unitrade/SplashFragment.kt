@@ -22,6 +22,7 @@ import androidx.navigation.fragment.findNavController
 import com.unitrade.unitrade.R
 import com.unitrade.unitrade.OnboardingManager
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -29,24 +30,36 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class SplashFragment : Fragment(R.layout.fragment_splash) {
 
-    // DI injection dari Hilt: manager untuk status onboarding
     @Inject
     lateinit var onboardingManager: OnboardingManager
+
+    // minimal durasi splash dalam millisecond (1500 ms = 1.5 detik)
+    private val minSplashMillis = 1500L
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Gunakan lifecycleScope untuk menjalankan suspend read dari DataStore
         lifecycleScope.launch {
-            // Ambil satu value saat ini. first() mengambil value pertama dan membatalkan koleksi.
-            val isFirstLaunch = onboardingManager.isFirstLaunchFlow.first()
+            val start = System.currentTimeMillis()
 
-            // Navigasi berdasarkan flag
+            // baca flag onboarding (suspend). jika error fallback ke true
+            val isFirstLaunch = try {
+                onboardingManager.isFirstLaunchFlow.first()
+            } catch (e: Exception) {
+                true
+            }
+
+            // pastikan splash tampil minimal minSplashMillis
+            val elapsed = System.currentTimeMillis() - start
+            val remaining = minSplashMillis - elapsed
+            if (remaining > 0) {
+                delay(remaining)
+            }
+
+            // navigasi berdasarkan flag
             if (isFirstLaunch) {
-                // Jika pertama kali, buka onboarding
                 findNavController().navigate(R.id.action_splash_to_onboarding)
             } else {
-                // Bukan pertama kali, langsung ke main (home)
                 findNavController().navigate(R.id.action_splash_to_main)
             }
         }
