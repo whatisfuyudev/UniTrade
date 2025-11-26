@@ -26,18 +26,19 @@ import javax.inject.Inject
 /**
  * app/src/main/java/com/unitrade/unitrade/ProductDetailFragment.kt
  *
- * Menampilkan detail produk:
- * - load product data dari ProductRepository.getProductOnce(productId)
- * - menampilkan banyak gambar (ViewPager2) via ImagePagerAdapter
- * - klik image -> buka ImageViewerActivity (re-use)
- * - toggle favorit: menambah/menghapus productId pada field "favorites" di dokumen users (Firestore)
- * - menampilkan info penjual (photo, name, faculty, contact)
+ * Deskripsi:
+ * - Menampilkan detail produk
+ * - Menyediakan tombol chat yang akan:
+ *     * jika user belum login -> navigasi ke LoginFragment
+ *     * jika user login -> membuat/ambil chat thread deterministik per-product melalui
+ *       ChatRepository.getOrCreateThreadWith(myUid, ownerId, productId)
+ *       lalu menavigasi ke ChatDetailFragment dengan arg "chatId"
  *
- * Dependensi di-inject via Hilt:
- * - ProductRepository : untuk ambil data product
- * - ChatRepository : untuk operasi chat (getOrCreateThreadWith)
- * - FirebaseFirestore : untuk update favorites & ambil data user penjual
- * - FirebaseAuth : untuk cek current user uid
+ * Perubahan utama:
+ * - Pada klik btnChat, sekarang memanggil getOrCreateThreadWith(..., productId)
+ *   sehingga thread bersifat per-product (chat_prod_{productId}_{u1}_{u2}).
+ *
+ * Lokasi file: app/src/main/java/com/unitrade/unitrade/ProductDetailFragment.kt
  */
 @AndroidEntryPoint
 class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
@@ -98,7 +99,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             toggleFavorite()
         }
 
-        // chat button behaviour (same as sebelumnya)
+        // chat button behaviour: create/get per-product thread and navigate to chatDetail
         btnChat?.setOnClickListener {
             btnChat?.isEnabled = false
             val currentUid = chatRepository.auth.currentUser?.uid
@@ -122,10 +123,12 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
                 return@setOnClickListener
             }
 
-            // create or get thread then navigate
+            // create or get product-scoped thread then navigate
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
-                    val chatId = chatRepository.getOrCreateThreadWith(currentUid, ownerId)
+                    // IMPORTANT: pass productId so thread is deterministic per-product
+                    val pid = productId // may be null; getOrCreateThreadWith handles null
+                    val chatId = chatRepository.getOrCreateThreadWith(currentUid, ownerId, pid)
                     val bundle = Bundle().apply { putString("chatId", chatId) }
                     findNavController().navigate(R.id.chatDetailFragment, bundle)
                 } catch (e: Exception) {

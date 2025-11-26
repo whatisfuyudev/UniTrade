@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/chatDetailRoot"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/chatDetailFragment">
+    android:layout_height="match_parent">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvMessages"
@@ -13,10 +13,39 @@
         android:layout_weight="1"
         tools:listitem="@layout/item_chat_message_in"/>
 
-    <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content"
+    <!-- input container has id inputContainer so ChatDetailFragment can add bottom padding via insets -->
+    <LinearLayout
+        android:id="@+id/inputContainer"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:padding="8dp">
-        <ImageButton android:id="@+id/btnAttach" android:src="@drawable/ic_attach" android:layout_width="40dp" android:layout_height="40dp"/>
-        <EditText android:id="@+id/etMessage" android:layout_width="0dp" android:layout_weight="1" android:layout_height="40dp" android:hint="Tulis pesan..." />
-        <Button android:id="@+id/btnSend" android:layout_width="wrap_content" android:layout_height="40dp" android:text="Kirim" />
+
+        <ImageButton
+            android:id="@+id/btnAttach"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_attach"
+            android:contentDescription="lampirkan" />
+
+        <!-- multiline editable that expands up to 5 lines -->
+        <EditText
+            android:id="@+id/etMessage"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:hint="Tulis pesan..."
+            android:inputType="textMultiLine"
+            android:minLines="1"
+            android:maxLines="5"
+            android:overScrollMode="ifContentScrolls"
+            android:scrollbars="vertical"
+            android:gravity="start|center_vertical" />
+
+        <Button
+            android:id="@+id/btnSend"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="Kirim" />
     </LinearLayout>
 </LinearLayout>

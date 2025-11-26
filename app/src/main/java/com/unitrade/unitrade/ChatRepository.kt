@@ -3,8 +3,6 @@ package com.unitrade.unitrade
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.*
-import com.unitrade.unitrade.ChatMessage
-import com.unitrade.unitrade.ChatThread
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
@@ -12,15 +10,17 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * app/src/main/java/com/unitrade/unitrade/data/repository/ChatRepository.kt
+ * app/src/main/java/com/unitrade/unitrade/ChatRepository.kt
  *
  * Repository yang mengelola operasi chat terhadap Firestore:
- * - create/get thread
- * - send message (text / image)
- * - observe messages realtime (Flow)
- * - list recent threads
+ * - Buat/ambil thread (baik pasangan umum maupun deterministik per-product)
+ * - Kirim pesan (text/image) dan update metadata thread (batch)
+ * - Observe messages realtime (callbackFlow)
+ * - Observe threads untuk user (callbackFlow) — sekarang WITHOUT orderBy to avoid composite index requirement
  *
- * Catatan: gunakan batching jika butuh update multi-write (e.g., update chat doc + add message).
+ * Catatan:
+ * - getOrCreateThreadWith(userA,userB) (lama) masih dipertahankan dan memanggil overload baru tanpa productId.
+ * - Jika kamu ingin menampilkan threads terurut berdasarkan lastMessageAt, lakukan sorting di client (ViewModel) setelah menerima daftar.
  */
 @Singleton
 class ChatRepository @Inject constructor(
@@ -28,33 +28,54 @@ class ChatRepository @Inject constructor(
     val auth: FirebaseAuth
 ) {
     private val chatsCol = firestore.collection("chats")
-
     private fun currentUid() = auth.currentUser?.uid
 
     /**
-     * Get or create chat thread for two participants (simple 1-to-1).
-     * Returns chatId.
+     * (Keberadaan lama) Tetap sediakan fungsi lama untuk kompatibilitas.
+     * Memanggil versi yang menerima productId = null.
      */
     suspend fun getOrCreateThreadWith(userA: String, userB: String): String {
-        // deterministic thread id by sorting UIDs to avoid duplicates
-        val participants = listOf(userA, userB).sorted()
-        val threadId = participants.joinToString("_")
-        val docRef = chatsCol.document(threadId)
-        val snapshot = docRef.get().await()
-        if (snapshot.exists()) return threadId
+        return getOrCreateThreadWith(userA, userB, null)
+    }
 
-        val thread = ChatThread(
-            chatId = threadId,
-            participants = participants,
-            lastMessageText = null,
-            lastMessageAt = Timestamp.now()
+    /**
+     * New/updated:
+     * Buat atau ambil thread secara deterministik.
+     * Jika productId != null -> buat thread khusus untuk pasangan user + product.
+     * Mengembalikan chatId (document id).
+     *
+     * Penjelasan id deterministik:
+     * - Mengurutkan UID sehingga id konsisten: "chat_prod_{productId}_{minUid}_{maxUid}"
+     * - Keuntungan: tidak perlu melakukan query kompleks untuk menemukan thread.
+     */
+    suspend fun getOrCreateThreadWith(userA: String, userB: String, productId: String? = null): String {
+        // deterministic ordering so id is consistent
+        val (u1, u2) = listOf(userA, userB).sorted()
+        val docId = if (!productId.isNullOrBlank()) {
+            "chat_prod_${productId}_${u1}_$u2"
+        } else {
+            "chat_${u1}_$u2"
+        }
+
+        val docRef = chatsCol.document(docId)
+        val snap = docRef.get().await()
+        if (snap.exists()) return docId
+
+        val data = mutableMapOf<String, Any?>(
+            "chatId" to docId,
+            "participants" to listOf(userA, userB),
+            "lastMessageText" to null,
+            "lastMessageAt" to FieldValue.serverTimestamp()
         )
-        docRef.set(thread).await()
-        return threadId
+        if (!productId.isNullOrBlank()) data["productId"] = productId
+
+        docRef.set(data).await()
+        return docId
     }
 
     /**
      * Send message by adding document to subcollection messages and update thread metadata.
+     * (Tidak dihapus, behaviour tetap sama.)
      */
     suspend fun sendMessage(chatId: String, message: ChatMessage) {
         val threadRef = chatsCol.document(chatId)
@@ -82,8 +103,9 @@ class ChatRepository @Inject constructor(
     /**
      * Observe last N messages for a chat as Flow. Uses snapshot listener.
      * Caller collects on Main thread.
+     * (Sama seperti sebelumnya, tetap menggunakan orderBy pada messages)
      */
-    fun observeMessages(chatId: String, limit: Long = 50L) = callbackFlow<List<ChatMessage>> {
+    fun observeMessages(chatId: String, limit: Long = 100L) = callbackFlow<List<ChatMessage>> {
         val query = chatsCol.document(chatId)
             .collection("messages")
             .orderBy("createdAt", Query.Direction.ASCENDING)
@@ -117,12 +139,12 @@ class ChatRepository @Inject constructor(
     }
 
     /**
-     * Observe chat threads where current user is participant (list of conversations).
+     * Observe chat threads where current user is participant.
+     * IMPORTANT: removed `orderBy("lastMessageAt", DESCENDING)` here to avoid composite index requirement.
+     * Sorting should be done client-side after receiving the list (ViewModel).
      */
     fun observeThreadsForUser(uid: String) = callbackFlow<List<ChatThread>> {
         val query = chatsCol.whereArrayContains("participants", uid)
-            .orderBy("lastMessageAt", Query.Direction.DESCENDING)
-
         val reg = query.addSnapshotListener { snap, err ->
             if (err != null) {
                 close(err)
@@ -136,12 +158,20 @@ class ChatRepository @Inject constructor(
                         participants = (data["participants"] as? List<String>) ?: emptyList(),
                         lastMessageText = data["lastMessageText"] as? String,
                         lastMessageAt = data["lastMessageAt"] as? Timestamp,
-                        unreadCounts = (data["unreadCounts"] as? Map<String, Long>) ?: emptyMap()
+                        productId = data["productId"] as? String
                     )
                 } catch (e: Exception) { null }
             } ?: emptyList()
             trySend(list)
         }
         awaitClose { reg.remove() }
+    }
+
+    /**
+     * Convenience: get thread document snapshot once (suspend).
+     * Useful untuk mengambil productId / metadata thread.
+     */
+    suspend fun getThreadOnce(chatId: String): DocumentSnapshot {
+        return chatsCol.document(chatId).get().await()
     }
 }

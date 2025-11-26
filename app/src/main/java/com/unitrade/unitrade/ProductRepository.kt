@@ -17,21 +17,22 @@ import java.io.File
 import javax.inject.Named
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.withContext
 import java.util.Locale
 
-
 /**
- * File: app/src/main/java/com/unitrade/unitrade/data/repo/ProductRepository.kt
+ * File: app/src/main/java/com/unitrade/unitrade/ProductRepository.kt
  *
  * Repository untuk operasi CRUD produk:
- * - addProduct: upload gambar ke Cloudinary (mengembalikan UploadResult) -> ambil secureUrl -> simpan di Firestore
- * - updateProduct: upload gambar baru bila ada (gunakan UploadResult.secureUrl), merge imageUrls
- * - deleteProduct: menghapus dokumen product (tidak menghapus file Cloudinary di client)
+ * - addProduct: upload gambar ke Cloudinary -> simpan secureUrl ke imageUrls di Firestore
+ * - updateProduct: upload gambar baru bila ada, merge imageUrls
+ * - deleteProduct: menghapus dokumen product; optional: coba hapus asset di Cloudinary via signed API
+ * - getProductOnce(productId): fetch single product document (helper yang dipakai oleh UI)
+ * - searchProductsByText, pagination helpers, batch get by ids, owner lookup, remove image, dll.
  *
  * Catatan:
- * - CloudinaryUploader.uploadImage(file, folder) sekarang mengembalikan UploadResult? (secureUrl + publicId).
- *   Kode ini mengambil secureUrl dari UploadResult dan menyimpan ke imageUrls.
+ * - CloudinaryUploader.uploadImage(file, folder) diharapkan mengembalikan UploadResult? (secureUrl + publicId)
+ * - Menghapus asset Cloudinary yang aman sebaiknya dilakukan di backend; fungsi deleteImageSigned disediakan
+ *   hanya untuk demo/content yang sudah kamu setujui.
  */
 @Singleton
 class ProductRepository @Inject constructor(
@@ -43,6 +44,12 @@ class ProductRepository @Inject constructor(
 ) {
     private val productsColl get() = firestore.collection("products")
 
+    /**
+     * Tambah produk baru:
+     * - upload imageFiles ke Cloudinary folder yang diberikan
+     * - simpan dokumen product di Firestore
+     * - mengembalikan productId (doc id)
+     */
     suspend fun addProduct(product: Product, imageFiles: List<File>, folder: String): String = withContext(Dispatchers.IO) {
         val user = auth.currentUser ?: throw Exception("User not authenticated")
         val docRef = productsColl.document()
@@ -55,7 +62,6 @@ class ProductRepository @Inject constructor(
         for (file in imageFiles) {
             val result = cloudinaryUploader.uploadImage(file, folder)
                 ?: throw Exception("Upload failed for ${file.name}")
-            // result.secureUrl wajib ada, publicId bisa null
             uploadedUrls.add(result.secureUrl)
             uploadedPublicIds.add(result.publicId)
         }
@@ -69,7 +75,6 @@ class ProductRepository @Inject constructor(
             "condition" to product.condition,
             "price" to product.price,
             "imageUrls" to uploadedUrls,
-            // optional: simpan publicIds jika ingin nanti hapus file dari cloudinary
             "imagePublicIds" to uploadedPublicIds,
             "isActive" to product.isActive,
             "createdAt" to FieldValue.serverTimestamp(),
@@ -84,7 +89,7 @@ class ProductRepository @Inject constructor(
     /**
      * Update product:
      * - jika ada newImageFiles: upload dan tambahkan secureUrl ke daftar existingUrls
-     * - mergedUrls disimpan kembali di dokumen
+     * - simpan merged lists ke dokumen
      */
     suspend fun updateProduct(productId: String, updatedFields: Product, newImageFiles: List<File>?, folder: String): Unit = withContext(Dispatchers.IO) {
         val docRef = productsColl.document(productId)
@@ -128,12 +133,19 @@ class ProductRepository @Inject constructor(
         docRef.update(updateMap as Map<String, Any?>).await()
     }
 
+    /**
+     * Hapus produk (doc) dan coba hapus asset Cloudinary bila publicId tersedia.
+     * Perlu catatan keamanan: penggunaan apiSecret di client tidak aman untuk produksi.
+     */
     suspend fun deleteProduct(productId: String): Unit = withContext(Dispatchers.IO) {
         val docRef = productsColl.document(productId)
         docRef.delete().await()
-        // Note: file deletion in Cloudinary should be done via backend or signed API (not handled here).
+        // Note: file deletion in Cloudinary ideally done via backend; this client method does not delete assets
     }
 
+    /**
+     * Realtime flow produk aktif
+     */
     fun productsFlow(): Flow<List<Product>> = callbackFlow {
         val query = firestore.collection("products")
             .whereEqualTo("isActive", true)
@@ -150,11 +162,12 @@ class ProductRepository @Inject constructor(
             trySend(list).isSuccess
         }
 
-        awaitClose {
-            registration.remove()
-        }
+        awaitClose { registration.remove() }
     }.flowOn(Dispatchers.IO)
 
+    /**
+     * Ambil satu product dokumen sekali (helper untuk UI)
+     */
     suspend fun getProductOnce(productId: String): Product? {
         val docRef = firestore.collection("products").document(productId)
         val snapshot = docRef.get().await()
@@ -162,28 +175,21 @@ class ProductRepository @Inject constructor(
     }
 
     /**
-     * Cari produk berdasarkan teks (title atau description).
-     * - Melakukan dua query prefix: title dan description (startAt / endAt).
-     * - Gabungkan hasil, hilangkan duplikat berdasarkan doc id, lalu filter case-insensitive
-     *   untuk memastikan substring match (title atau description contains).
-     *
-     * Note: ini melakukan 2 reads per query hasil; batasi `limit` untuk mengontrol read charge.
+     * Pencarian sederhana berdasarkan prefix pada title atau description.
+     * Menggunakan teknik startAt / endAt dengan '\uf8ff'.
      */
     suspend fun searchProductsByText(queryText: String, limit: Int = 50): List<Product> = withContext(Dispatchers.IO) {
         val q = queryText.trim()
         if (q.isEmpty()) return@withContext emptyList<Product>()
 
-        // Firestore prefix trick: startAt / endAt with trailing \uf8ff
         val end = "$q\uf8ff"
 
-        // Query title prefix
         val qTitle = productsColl
             .orderBy("title")
             .startAt(q)
             .endAt(end)
             .limit(limit.toLong())
 
-        // Query description prefix
         val qDesc = productsColl
             .orderBy("description")
             .startAt(q)
@@ -192,7 +198,7 @@ class ProductRepository @Inject constructor(
 
         val snaps = listOf(qTitle.get().await(), qDesc.get().await())
 
-        val merged = LinkedHashMap<String, Product>() // maintain insertion order, avoid duplicates
+        val merged = LinkedHashMap<String, Product>()
         for (snap in snaps) {
             for (doc in snap.documents) {
                 val p = doc.toObject(Product::class.java)?.apply { productId = doc.id }
@@ -200,7 +206,6 @@ class ProductRepository @Inject constructor(
             }
         }
 
-        // final filter: contain in title or description, case-insensitive
         val lower = q.lowercase(Locale.getDefault())
         val filtered = merged.values.filter { prod ->
             val t = prod.title ?: ""
@@ -208,32 +213,22 @@ class ProductRepository @Inject constructor(
             t.lowercase(Locale.getDefault()).contains(lower) || d.lowercase(Locale.getDefault()).contains(lower)
         }
 
-        // limit again in case both queries produced many results
         if (filtered.size <= limit) filtered else filtered.subList(0, limit)
     }
 
-    // Tambahkan di dalam file ProductRepository.kt (di sebelah fungsi read lainnya)
     data class PageResult<T>(
         val items: List<T>,
         val lastSnapshot: DocumentSnapshot?
     )
 
     /**
-     * Ambil satu page produk dari koleksi "products".
-     * - pageSize: jumlah item per halaman (mis. 10)
-     * - lastSnapshot: DocumentSnapshot terakhir dari page sebelumnya (null untuk page pertama)
-     * - orderDesc: true => urut berdasarkan createdAt DESC (Terbaru dulu), false => ASC (Terlama dulu)
-     *
-     * Catatan:
-     * - Pastikan setiap dokumen product menyimpan field "createdAt" (FieldValue.serverTimestamp()) saat create.
-     * - Fungsi ini tidak mengubah fungsi realtime yang ada (productsFlow).
+     * Pagination helper - ambil satu page produk.
      */
     suspend fun getProductsPage(
         pageSize: Int,
         lastSnapshot: DocumentSnapshot? = null,
         orderDesc: Boolean = true
     ): PageResult<Product> = withContext(Dispatchers.IO) {
-        // Query: orderBy createdAt (pastikan field ini ada)
         var query = productsColl
             .orderBy("createdAt", if (orderDesc) Query.Direction.DESCENDING else Query.Direction.ASCENDING)
             .limit(pageSize.toLong())
@@ -245,7 +240,7 @@ class ProductRepository @Inject constructor(
         val snap = query.get().await()
         val items = snap.documents.mapNotNull { doc ->
             val p = doc.toObject(Product::class.java)
-            p?.apply { productId = doc.id } // pastikan Product punya property productId: String
+            p?.apply { productId = doc.id }
         }
 
         val last = if (snap.documents.isNotEmpty()) snap.documents.last() else null
@@ -253,15 +248,12 @@ class ProductRepository @Inject constructor(
     }
 
     /**
-     * Ambil daftar produk berdasarkan daftar productId.
-     * - Menggunakan batching untuk mengatasi batas whereIn (10 items).
-     * - Mengembalikan list produk dalam urutan tidak dijamin (urut berdasarkan query hasil Firestore).
+     * Ambil produk berdasarkan daftar ids (batched karena whereIn limit = 10).
      */
     suspend fun getProductsByIds(ids: List<String>): List<Product> = withContext(Dispatchers.IO) {
         if (ids.isEmpty()) return@withContext emptyList<Product>()
 
         val results = mutableListOf<Product>()
-        // Firestore whereIn limit = 10 items per query -> chunk
         val chunks = ids.chunked(10)
         for (chunk in chunks) {
             val query = productsColl.whereIn("productId", chunk)
@@ -276,7 +268,7 @@ class ProductRepository @Inject constructor(
     }
 
     /**
-     * Mengambil semua produk yang dimiliki oleh ownerId (suspend).
+     * Ambil semua produk milik ownerId.
      */
     suspend fun getProductsByOwner(ownerId: String): List<Product> = withContext(Dispatchers.IO) {
         val query = productsColl.whereEqualTo("ownerId", ownerId)
@@ -286,30 +278,20 @@ class ProductRepository @Inject constructor(
     }
 
     /**
-     * Menghapus produk dan mencoba menghapus file gambar di Cloudinary (client-side signed delete).
-     *
-     * @param productId id dokumen product
-     * @param imageUrls optional list of secure_url (dipakai untuk heuristik bila imagePublicIds tidak tersedia)
+     * Hapus produk lengkap - coba hapus asset Cloudinary jika public ids tersedia,
+     * lalu hapus dokumen Firestore.
      */
     suspend fun deleteProduct(productId: String, imageUrls: List<String>? = null): Unit = withContext(Dispatchers.IO) {
         val docRef = productsColl.document(productId)
         val snapshot = docRef.get().await()
-        if (!snapshot.exists()) {
-            // nothing to delete, but return normally
-            return@withContext
-        }
+        if (!snapshot.exists()) return@withContext
 
-        // 1) try to read stored public ids
         val storedPublicIds = snapshot.get("imagePublicIds") as? List<String?>
         val toDeletePublicIds = mutableListOf<String>()
 
         if (!storedPublicIds.isNullOrEmpty()) {
-            // use stored public ids if present
-            for (pid in storedPublicIds) {
-                if (!pid.isNullOrBlank()) toDeletePublicIds.add(pid)
-            }
+            for (pid in storedPublicIds) if (!pid.isNullOrBlank()) toDeletePublicIds.add(pid)
         } else {
-            // fallback: try to derive public id from imageUrls (heuristic)
             val urls = imageUrls ?: (snapshot.get("imageUrls") as? List<String>) ?: emptyList()
             for (url in urls) {
                 val pid = extractPublicIdFromCloudinaryUrl(url)
@@ -317,91 +299,56 @@ class ProductRepository @Inject constructor(
             }
         }
 
-        // 2) attempt delete each publicId using signed API (client-side)
         for (publicId in toDeletePublicIds) {
             try {
-                // deleteImageSigned returns Boolean
-                val ok = cloudinaryUploader.deleteImageSigned(publicId, cloudinaryApiKey, cloudinaryApiSecret)
-                // optional: log result (no logger here)
+                cloudinaryUploader.deleteImageSigned(publicId, cloudinaryApiKey, cloudinaryApiSecret)
             } catch (e: Exception) {
-                // swallow errors to ensure we still delete doc; you may want to surface error to UI
                 e.printStackTrace()
             }
         }
 
-        // 3) delete firestore doc
         docRef.delete().await()
     }
 
     /**
-     * Hapus satu image dari product:
-     * - menghapus asset di Cloudinary via signed delete (jika publicId tersedia atau dapat diekstrak)
-     * - menghapus entry imageUrl dan imagePublicIds di dokumen Firestore (arrayRemove)
-     *
-     * @param productId id dokumen product
-     * @param publicId public_id Cloudinary (boleh null)
-     * @param imageUrl secure_url Cloudinary (boleh null)
+     * Hapus satu image dari product: delete asset via signed API (if possible) and remove references in Firestore.
      */
     suspend fun removeImageFromProduct(productId: String, publicId: String?, imageUrl: String?): Unit = withContext(Dispatchers.IO) {
         val docRef = productsColl.document(productId)
         val snapshot = docRef.get().await()
         if (!snapshot.exists()) throw Exception("Product not found")
 
-        // determine publicId to delete
         var pidToDelete: String? = publicId
-        if (pidToDelete.isNullOrBlank()) {
-            pidToDelete = extractPublicIdFromCloudinaryUrl(imageUrl)
-        }
+        if (pidToDelete.isNullOrBlank()) pidToDelete = extractPublicIdFromCloudinaryUrl(imageUrl)
 
-        // 1) delete asset in Cloudinary (if we have publicId)
         if (!pidToDelete.isNullOrBlank()) {
             try {
-                val ok = cloudinaryUploader.deleteImageSigned(pidToDelete, cloudinaryApiKey, cloudinaryApiSecret)
-                // if not ok, we still attempt Firestore update; optionally you can throw
-                if (!ok) {
-                    // optional: throw Exception("Gagal menghapus asset di Cloudinary")
-                    // we'll continue to try remove document refs even if delete failed
-                }
+                cloudinaryUploader.deleteImageSigned(pidToDelete, cloudinaryApiKey, cloudinaryApiSecret)
             } catch (e: Exception) {
-                // swallow but log (or rethrow if you prefer)
                 e.printStackTrace()
             }
         }
 
-        // 2) remove entries from Firestore arrays
         val updates = mutableMapOf<String, Any>()
         imageUrl?.let { updates["imageUrls"] = FieldValue.arrayRemove(it) }
-        if (!publicId.isNullOrBlank()) {
-            // remove the exact publicId value (if it exists)
-            updates["imagePublicIds"] = FieldValue.arrayRemove(publicId)
-        } else if (!pidToDelete.isNullOrBlank()) {
-            // if original publicId null but we extracted a pidToDelete, remove that
-            updates["imagePublicIds"] = FieldValue.arrayRemove(pidToDelete)
-        }
+        if (!publicId.isNullOrBlank()) updates["imagePublicIds"] = FieldValue.arrayRemove(publicId)
+        else if (!pidToDelete.isNullOrBlank()) updates["imagePublicIds"] = FieldValue.arrayRemove(pidToDelete)
+
         if (updates.isNotEmpty()) {
-            // perform atomic update for each field separately because FieldValue used
-            // Firestore supports multiple fields, so pass updates map
             docRef.update(updates as Map<String, Any>).await()
         }
     }
 
-    // helper: ekstraksi public_id dari secure_url Cloudinary
+    // helper: extract public_id from typical Cloudinary secure url
     private fun extractPublicIdFromCloudinaryUrl(url: String?): String? {
         if (url.isNullOrBlank()) return null
         try {
-            // contoh URL:
-            // https://res.cloudinary.com/<cloud>/image/upload/v1670000000/unitrade-products-pictures/abc_def-01.jpg
-            // langkah: ambil substring setelah "/image/upload/"
             val marker = "/image/upload/"
             if (!url.contains(marker)) return null
-            var tail = url.substringAfter(marker) // mungkin dimulai dengan "v12345/..."
-            // hilangkan versi jika ada (v\d+/)
+            var tail = url.substringAfter(marker)
             tail = tail.replaceFirst(Regex("^v\\d+/"), "")
-            // hapus query string jika ada
             if (tail.contains("?")) tail = tail.substringBefore("?")
-            // hapus extension
             val noExt = tail.substringBeforeLast('.')
-            // noExt sekarang seharusnya "unitrade-products-pictures/abc_def-01" atau "abc_def-01"
             return noExt
         } catch (e: Exception) {
             return null
