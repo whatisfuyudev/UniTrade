@@ -120,4 +120,7 @@ dependencies {
     implementation("de.hdodenhof:circleimageview:3.1.0")
 
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:<latest-version>")
+
+    // Google AI (Gemini) for chatbot
+    implementation("com.google.ai.client.generativeai:generativeai:0.1.2")
 }

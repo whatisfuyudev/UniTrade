@@ -71,6 +71,10 @@
             <action
                 android:id="@+id/action_home_to_chatList"
                 app:destination="@id/chatListFragment" />
+            <!-- AI Chatbot -->
+            <action
+                android:id="@+id/action_home_to_aiChatbot"
+                app:destination="@id/aiChatbotFragment" />
         </fragment>
 
         <fragment
@@ -138,6 +142,10 @@
                 app:destination="@id/chatDetailFragment">
                 <argument android:name="chatId" app:argType="string" />
             </action>
+            <!-- AI Chatbot -->
+            <action
+                android:id="@+id/action_profile_to_aiChatbot"
+                app:destination="@id/aiChatbotFragment" />
         </fragment>
 
         <!-- Add/Edit product fragment -->
@@ -167,6 +175,12 @@
             android:id="@+id/myProductsFragment"
             android:name="com.unitrade.unitrade.MyProductsFragment"
             android:label="MyProducts" />
+
+        <!-- AI Chatbot Fragment -->
+        <fragment
+            android:id="@+id/aiChatbotFragment"
+            android:name="com.unitrade.unitrade.AIChatbotFragment"
+            android:label="FAQ Assistant" />
 
         <!-- Tambahkan fragment lain di sini sesuai kebutuhan -->
     </navigation>

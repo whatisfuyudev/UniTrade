@@ -79,6 +79,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     showFilterDialog()
                     true
                 }
+                R.id.action_ai_chatbot -> {
+                    findNavController().navigate(R.id.action_home_to_aiChatbot)
+                    true
+                }
                 else -> false
             }
         }
