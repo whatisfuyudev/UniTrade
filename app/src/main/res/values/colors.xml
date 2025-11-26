@@ -1,7 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Basic -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Primary / App brand -->
+    <color name="colorPrimary">#FFFF6A2D</color>         <!-- orange utama (bottom nav, CTA outline) -->
+    <color name="colorPrimaryDark">#FFE0551F</color>     <!-- state / pressed -->
+    <color name="colorPrimaryLight">#FFFF9A73</color>    <!-- soft orange accent -->
+
+    <!-- Accent / success -->
+    <color name="colorAccent">#FF2FC36B</color>          <!-- hijau tombol Buy Now -->
+    <color name="colorAccentDark">#FF229D51</color>
+
+    <!-- Backgrounds / surfaces -->
+    <color name="colorAppBackground">#FFFF8F77</color>   <!-- coral / overall page background (aprox) -->
+    <color name="colorSurface">#FFFFFFFF</color>         <!-- card / sheet bg -->
+    <color name="colorSurfaceElevated">#FFFFF5F3</color> <!-- slightly warm card bg -->
+    <color name="colorDivider">#FFF2F2F2</color>
+
+    <!-- Text (rekomendasi) -->
+    <color name="textPrimary">#FF222222</color>          <!-- main text -->
+    <color name="textSecondary">#FF777777</color>        <!-- secondary text -->
+    <color name="textMuted">#FFAAAAAA</color>            <!-- helper / subdued -->
+
+    <!-- Grays / UI -->
+    <color name="grayLight">#FFF7F7F8</color>
+    <color name="grayMid">#FFE6E6E6</color>
+    <color name="gray">#FFCCCCCC</color>
+    <color name="grayDark">#FF4B4B4B</color>
+
+    <!-- Buttons -->
+    <color name="btnOrange">#FFFF6A2D</color>
+    <color name="btnOrangePressed">#FFE0551F</color>
+    <color name="btnGreen">#FF2FC36B</color>
+    <color name="btnGreenPressed">#FF229D51</color>
+
+    <!-- Alerts / misc -->
+    <color name="colorError">#FFFF3B30</color>
+    <color name="colorSuccess">#FF28C76F</color>
+
+    <!-- Shadows / overlays -->
+    <color name="overlay">#33000000</color>            <!-- semi-transparent black untuk overlay (20% alpha) -->
+    <color name="cardShadow">#0A000000</color>
 
     <!-- Palet coral/orange (accent warm) -->
     <color name="coral_primary">#FF6F61</color>      <!-- coral utama -->

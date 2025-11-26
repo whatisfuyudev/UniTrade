@@ -4,10 +4,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.card.MaterialCardView
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -24,8 +24,8 @@ class AIChatMessageAdapter : ListAdapter<AIChatMessage, AIChatMessageAdapter.Mes
     }
 
     class MessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val cardUserMessage: CardView = itemView.findViewById(R.id.cardUserMessage)
-        private val cardAiMessage: CardView = itemView.findViewById(R.id.cardAiMessage)
+        private val cardUserMessage: MaterialCardView = itemView.findViewById(R.id.cardUserMessage)
+        private val cardAiMessage: MaterialCardView = itemView.findViewById(R.id.cardAiMessage)
         private val textUserMessage: TextView = itemView.findViewById(R.id.textUserMessage)
         private val textUserTime: TextView = itemView.findViewById(R.id.textUserTime)
         private val textAiMessage: TextView = itemView.findViewById(R.id.textAiMessage)
@@ -33,7 +33,7 @@ class AIChatMessageAdapter : ListAdapter<AIChatMessage, AIChatMessageAdapter.Mes
 
         private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
-        fun bind(message: AIChatMessage) {
+        fun bind(message: AIChatMessage) {            
             if (message.isFromUser) {
                 cardUserMessage.visibility = View.VISIBLE
                 cardAiMessage.visibility = View.GONE

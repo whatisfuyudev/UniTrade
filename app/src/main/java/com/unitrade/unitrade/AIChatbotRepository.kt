@@ -15,7 +15,7 @@ class AIChatbotRepository @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth
 ) {
-    private val apiKey = "REPLACE_WITH_API_KEY"
+    private val apiKey = "AIzaSyB1379HBhaXHlh2g3wUpPhKyuj6WO8cLcE"
     
     private val generativeModel = GenerativeModel(
         modelName = "models/gemini-2.5-flash",
@@ -174,17 +174,30 @@ class AIChatbotRepository @Inject constructor(
                 .set(aiChatMessage)
                 .await()
 
-            // Update session metadata
-            firestore.collection("aiChatSessions")
-                .document(userId)
-                .update(
+            // Update or create session metadata
+            val sessionRef = firestore.collection("aiChatSessions").document(userId)
+            val sessionDoc = sessionRef.get().await()
+            
+            if (sessionDoc.exists()) {
+                // Update existing session
+                sessionRef.update(
                     mapOf(
                         "lastMessageText" to aiResponseText,
                         "lastMessageAt" to Timestamp.now(),
                         "messageCount" to com.google.firebase.firestore.FieldValue.increment(2)
                     )
+                ).await()
+            } else {
+                // Create new session
+                val newSession = AIChatSession(
+                    sessionId = userId,
+                    userId = userId,
+                    lastMessageText = aiResponseText,
+                    lastMessageAt = Timestamp.now(),
+                    messageCount = 2
                 )
-                .await()
+                sessionRef.set(newSession).await()
+            }
 
             Result.Success(aiChatMessage)
         } catch (e: Exception) {
@@ -208,16 +221,28 @@ class AIChatbotRepository @Inject constructor(
             }
             batch.commit().await()
 
-            // Reset session metadata
-            firestore.collection("aiChatSessions")
-                .document(userId)
-                .update(
+            // Reset or create session metadata
+            val sessionRef = firestore.collection("aiChatSessions").document(userId)
+            val sessionDoc = sessionRef.get().await()
+            
+            if (sessionDoc.exists()) {
+                // Update existing session
+                sessionRef.update(
                     mapOf(
                         "lastMessageText" to "",
                         "messageCount" to 0
                     )
+                ).await()
+            } else {
+                // Create new session if it doesn't exist
+                val newSession = AIChatSession(
+                    sessionId = userId,
+                    userId = userId,
+                    lastMessageText = "",
+                    messageCount = 0
                 )
-                .await()
+                sessionRef.set(newSession).await()
+            }
 
             Result.Success(Unit)
         } catch (e: Exception) {
