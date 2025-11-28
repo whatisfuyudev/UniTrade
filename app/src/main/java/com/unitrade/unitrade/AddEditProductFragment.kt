@@ -330,21 +330,22 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
     }
 
     private fun saveProduct() {
-        val title = binding.etTitle.text.toString().trim()
-        val priceRaw = binding.etPrice.text.toString().trim()
-        val desc = binding.etDescription.text.toString().trim()
-        val category = binding.spinnerCategory.selectedItem.toString()
-        val condition = binding.spinnerCondition.selectedItem.toString()
-        val action = binding.spinnerAction.selectedItem.toString()
+        val b = _binding ?: return
+        val title = b.etTitle.text.toString().trim()
+        val priceRaw = b.etPrice.text.toString().trim()
+        val desc = b.etDescription.text.toString().trim()
+        val category = b.spinnerCategory.selectedItem.toString()
+        val condition = b.spinnerCondition.selectedItem.toString()
+        val action = b.spinnerAction.selectedItem.toString()
 
         if (title.isEmpty()) {
-            binding.etTitle.error = "Judul harus diisi"
+            b.etTitle.error = "Judul harus diisi"
             return
         }
         val price = priceRaw.toDoubleOrNull() ?: 0.0
 
-        binding.progressUploading.visibility = View.VISIBLE
-        binding.progressUploading.progress = 0
+        b.progressUploading.visibility = View.VISIBLE
+        b.progressUploading.progress = 0
 
         // one-shot coroutine for save
         viewLifecycleOwner.lifecycleScope.launch {
@@ -368,9 +369,6 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
                         action = action
                     )
 
-                    // NOTE: repository.updateProduct akan mengambil existing imageUrls dari Firestore
-                    // dan menambahkan uploaded new ones. Jika ingin persist penghapusan existingImageUrls
-                    // kamu perlu memperbarui repository untuk menerima daftar keepImageUrls.
                     productRepository.updateProduct(
                         base.productId,
                         updated,
@@ -396,13 +394,17 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
                     val savedProductId = productRepository.addProduct(product, imageFiles, "unitrade-products-pictures")
                     Toast.makeText(requireContext(), "Produk tersimpan (id: $savedProductId)", Toast.LENGTH_LONG).show()
                 }
-                // Navigate back to home safely
-                findNavController().popBackStack(R.id.homeFragment, false)
+                // Navigate back to Home robustly
+                val nav = findNavController()
+                val popped = nav.popBackStack(R.id.homeFragment, false)
+                if (!popped) {
+                    runCatching { nav.navigate(R.id.homeFragment) }
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
                 Toast.makeText(requireContext(), "Gagal menyimpan produk: ${e.message}", Toast.LENGTH_LONG).show()
             } finally {
-                binding.progressUploading.visibility = View.GONE
+                _binding?.progressUploading?.visibility = View.GONE
             }
         }
     }

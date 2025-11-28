@@ -5,12 +5,15 @@ import android.view.View
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.unitrade.unitrade.databinding.FragmentChatListBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -53,44 +56,42 @@ class ChatListFragment : Fragment(R.layout.fragment_chat_list) {
         binding.rvThreads.layoutManager = LinearLayoutManager(requireContext())
         binding.rvThreads.adapter = adapter
 
-        // Collect threads from viewModel and enrich with product data when available.
-        lifecycleScope.launch {
-            // If user not logged in, still collect but product fetch is independent
-            viewModel.threads.collect { threads ->
-                // map each thread to a ChatListDisplay concurrently
-                val deferred = threads.map { thread ->
-                    lifecycleScope.async {
-                        // Try to fetch product if thread has productId
-                        val product = try {
-                            thread.productId?.let { pid -> productRepo.getProductOnce(pid) }
-                        } catch (e: Exception) { null }
+        // Collect threads with view lifecycle awareness to avoid NPE after onDestroyView
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.threads.collect { threads ->
+                    // map each thread concurrently within the current coroutine scope
+                    val list = coroutineScope {
+                        val deferred = threads.map { thread ->
+                            async {
+                                val product = try {
+                                    thread.productId?.let { pid -> productRepo.getProductOnce(pid) }
+                                } catch (e: Exception) { null }
 
-                        // prepare display model - adapter should define ChatListDisplay accordingly
-                        ChatListAdapter.ChatListDisplay(
-                            chatId = thread.chatId,
-                            productTitle = product?.title,
-                            productImage = product?.imageUrls?.firstOrNull(),
-                            sellerId = product?.ownerId,
-                            lastMessageText = thread.lastMessageText,
-                            lastMessageAt = thread.lastMessageAt
-                        )
+                                ChatListAdapter.ChatListDisplay(
+                                    chatId = thread.chatId,
+                                    productTitle = product?.title,
+                                    productImage = product?.imageUrls?.firstOrNull(),
+                                    sellerId = product?.ownerId,
+                                    lastMessageText = thread.lastMessageText,
+                                    lastMessageAt = thread.lastMessageAt
+                                )
+                            }
+                        }
+                        deferred.mapNotNull { runCatching { it.await() }.getOrNull() }
                     }
-                }
 
-                // Await all fetches and update adapter
-                val list = deferred.mapNotNull {
-                    try { it.await() } catch (e: Exception) { null }
-                }
+                    adapter.setItems(list)
 
-                adapter.setItems(list)
-                
-                // Show/hide empty state
-                if (list.isEmpty()) {
-                    binding.tvEmptyChat.visibility = View.VISIBLE
-                    binding.rvThreads.visibility = View.GONE
-                } else {
-                    binding.tvEmptyChat.visibility = View.GONE
-                    binding.rvThreads.visibility = View.VISIBLE
+                    // Show/hide empty state (guard binding on view lifecycle)
+                    val b = _binding ?: return@collect
+                    if (list.isEmpty()) {
+                        b.tvEmptyChat.visibility = View.VISIBLE
+                        b.rvThreads.visibility = View.GONE
+                    } else {
+                        b.tvEmptyChat.visibility = View.GONE
+                        b.rvThreads.visibility = View.VISIBLE
+                    }
                 }
             }
         }

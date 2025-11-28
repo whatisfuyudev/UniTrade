@@ -24,13 +24,20 @@ class AuthRepository @Inject constructor(
                 .build()
             user.updateProfile(profileUpdates).await()
 
-            // create user doc in Firestore
-            val userDoc = hashMapOf(
+            // create user doc in Firestore aligned with UserModel
+            val userDoc = hashMapOf<String, Any?>(
                 "userId" to user.uid,
                 "email" to email,
                 "displayName" to displayName,
+                "faculty" to "",
+                "role" to "normal",
+                "contact" to null,
+                "photoUrl" to null,
+                "photoPublicId" to null,
+                "favorites" to emptyList<String>(),
                 "createdAt" to FieldValue.serverTimestamp()
             )
+            // allow extras (e.g., provided faculty) to override defaults
             extra?.let { userDoc.putAll(it) }
             firestore.collection("users").document(user.uid).set(userDoc).await()
 
