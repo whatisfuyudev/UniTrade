@@ -57,6 +57,28 @@ class MyProductsFragment : Fragment(R.layout.fragment_my_products) {
             onClick = { product ->
                 val bundle = Bundle().apply { putString("productId", product.productId) }
                 findNavController().navigate(R.id.productDetailFragment, bundle)
+            },
+            onMarkSold = { product ->
+                if (product.isSold) {
+                    Toast.makeText(requireContext(), "Produk sudah ditandai terjual", Toast.LENGTH_SHORT).show()
+                    return@MyProductAdapter
+                }
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Tandai Terjual")
+                    .setMessage("Tandai produk ini sebagai terjual? Pembeli yang memfavoritkan akan menerima notifikasi.")
+                    .setPositiveButton("Ya") { _, _ ->
+                        lifecycleScope.launch {
+                            try {
+                                productRepository.markProductAsSold(product.productId)
+                                Toast.makeText(requireContext(), "Produk ditandai terjual & notifikasi terkirim", Toast.LENGTH_SHORT).show()
+                                loadMyProductsOnce()
+                            } catch (e: Exception) {
+                                Toast.makeText(requireContext(), "Gagal menandai terjual: ${e.message}", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                    .setNegativeButton("Batal", null)
+                    .show()
             }
         )
 

@@ -13,10 +13,15 @@
 
 package com.unitrade.unitrade
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
@@ -28,6 +33,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private lateinit var navController: androidx.navigation.NavController
 
     // Daftar destination id (sesuaikan dengan id di nav_graph.xml jika beda)
     private val destinationsWithoutBottomNav = setOf(
@@ -37,10 +43,22 @@ class MainActivity : AppCompatActivity() {
         R.id.registerFragment
     )
 
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) 
+                != PackageManager.PERMISSION_GRANTED) {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
 
         // Pastikan activity meresize saat IME/keyboard muncul.
         // Ini dibuat di runtime supaya kita tidak perlu memodifikasi AndroidManifest.xml.
@@ -48,7 +66,7 @@ class MainActivity : AppCompatActivity() {
 
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        val navController = navHostFragment.navController
+        navController = navHostFragment.navController
 
         // Hubungkan bottom nav dengan navController
         binding.bottomNav.setupWithNavController(navController)
@@ -58,6 +76,8 @@ class MainActivity : AppCompatActivity() {
             binding.bottomNav.visibility =
                 if (destinationsWithoutBottomNav.contains(destination.id)) View.GONE else View.VISIBLE
         }
+
+        handleNotificationIntent(intent)
 
         // ---------------------------------------------------------------------
         // Layout adjustment to keep fragment content above BottomNavigationView
@@ -76,6 +96,51 @@ class MainActivity : AppCompatActivity() {
         // update padding whenever bottom nav layout changes (e.g. hide/show, rotation)
         binding.bottomNav.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
             binding.navHostFragment.setPadding(0, 0, 0, v.height)
+        }
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleNotificationIntent(intent)
+    }
+
+    private fun handleNotificationIntent(intent: android.content.Intent?) {
+        if (intent == null) return
+        
+        val notificationType = intent.getStringExtra("notificationType")
+        
+        when (notificationType) {
+            "chat" -> {
+                val chatId = intent.getStringExtra("chatId")
+                if (!chatId.isNullOrBlank()) {
+                    val bundle = Bundle().apply {
+                        putString("chatId", chatId)
+                    }
+                    binding.root.post {
+                        try {
+                            navController.navigate(R.id.chatDetailFragment, bundle)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+            }
+            "product" -> {
+                val productId = intent.getStringExtra("productId")
+                if (!productId.isNullOrBlank()) {
+                    val bundle = Bundle().apply {
+                        putString("productId", productId)
+                    }
+                    binding.root.post {
+                        try {
+                            navController.navigate(R.id.productDetailFragment, bundle)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+            }
         }
     }
 }

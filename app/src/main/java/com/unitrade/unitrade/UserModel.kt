@@ -17,5 +17,6 @@ data class UserModel(
     val photoUrl: String? = null,
     val photoPublicId: String? = null,  // optional: simpan public_id dari Cloudinary
     val favorites: List<String> = emptyList(),
+    val fcmToken: String? = null,
     val createdAt: Timestamp? = null
 )

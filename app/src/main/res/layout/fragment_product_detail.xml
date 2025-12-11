@@ -90,6 +90,17 @@
                     android:layout_marginTop="6dp"
                     style="?attr/textAppearanceLabelMedium"/>
 
+                <!-- Status chip (Tersedia/Terjual) -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipProductStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Tersedia"
+                    android:textSize="12sp"
+                    app:chipBackgroundColor="@color/green_500"
+                    android:textColor="@android:color/white" />
+
                 <TextView
                     android:id="@+id/tvDescription"
                     android:layout_width="match_parent"

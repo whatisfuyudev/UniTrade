@@ -77,6 +77,7 @@ class ProductRepository @Inject constructor(
             "imageUrls" to uploadedUrls,
             "imagePublicIds" to uploadedPublicIds,
             "isActive" to product.isActive,
+            "isSold" to false,
             "createdAt" to FieldValue.serverTimestamp(),
             "updatedAt" to FieldValue.serverTimestamp(),
             "action" to product.action
@@ -337,6 +338,65 @@ class ProductRepository @Inject constructor(
         if (updates.isNotEmpty()) {
             docRef.update(updates as Map<String, Any>).await()
         }
+    }
+
+    /**
+     * Mark product as sold dan kirim notifikasi ke semua user yang memfavoritkan produk ini
+     */
+    suspend fun markProductAsSold(productId: String): Unit = withContext(Dispatchers.IO) {
+        val user = auth.currentUser ?: throw Exception("User not authenticated")
+        
+        // Update status produk
+        val productRef = productsColl.document(productId)
+        productRef.update(
+            mapOf(
+                "isSold" to true,
+                "updatedAt" to FieldValue.serverTimestamp()
+            )
+        ).await()
+        
+        // Ambil data produk untuk notifikasi
+        val productSnapshot = productRef.get().await()
+        val product = productSnapshot.toObject(Product::class.java)
+        val productTitle = product?.title ?: "Produk"
+        
+        // Cari semua user yang memfavoritkan produk ini
+        val usersSnapshot = firestore.collection("users")
+            .whereArrayContains("favorites", productId)
+            .get()
+            .await()
+        
+        // Kirim notifikasi ke setiap user
+        for (userDoc in usersSnapshot.documents) {
+            val userId = userDoc.id
+            if (userId == user.uid) continue // Skip pemilik produk
+            
+            val fcmToken = userDoc.getString("fcmToken")
+            if (!fcmToken.isNullOrBlank()) {
+                sendSoldNotification(fcmToken, productTitle, productId)
+            }
+        }
+    }
+
+    /**
+     * Kirim notifikasi menggunakan FCM
+     * Karena free tier, kita akan simpan notifikasi di Firestore untuk dibaca client
+     */
+    private suspend fun sendSoldNotification(fcmToken: String, productTitle: String, productId: String) {
+        // Simpan notifikasi di collection "notifications" 
+        // Client akan listen dan menampilkan notifikasi lokal
+        val notificationData = hashMapOf(
+            "token" to fcmToken,
+            "title" to "Produk Favorit Terjual!",
+            "body" to "\"$productTitle\" yang Anda favoritkan sudah terjual",
+            "productId" to productId,
+            "timestamp" to FieldValue.serverTimestamp(),
+            "read" to false
+        )
+        
+        firestore.collection("pending_notifications")
+            .add(notificationData)
+            .await()
     }
 
     // helper: extract public_id from typical Cloudinary secure url

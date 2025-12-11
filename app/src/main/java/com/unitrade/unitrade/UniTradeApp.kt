@@ -13,9 +13,28 @@
 package com.unitrade.unitrade
 
 import android.app.Application
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
 @HiltAndroidApp
 class UniTradeApp : Application() {
-    // Jika perlu inisialisasi global lain (logging, analytics), taruh di onCreate() di sini.
+    
+    @Inject
+    lateinit var notificationListener: NotificationListener
+    
+    @Inject
+    lateinit var auth: FirebaseAuth
+    
+    override fun onCreate() {
+        super.onCreate()
+        
+        auth.addAuthStateListener { firebaseAuth ->
+            if (firebaseAuth.currentUser != null) {
+                notificationListener.startListening()
+            } else {
+                notificationListener.stopListening()
+            }
+        }
+    }
 }

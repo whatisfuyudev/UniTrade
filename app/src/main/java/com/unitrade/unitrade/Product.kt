@@ -40,6 +40,9 @@ data class Product(
     @get:PropertyName("isActive") @set:PropertyName("isActive")
     var isActive: Boolean = true,
 
+    @get:PropertyName("isSold") @set:PropertyName("isSold")
+    var isSold: Boolean = false,
+
     @ServerTimestamp
     var createdAt: Timestamp? = null,  // var so Firestore can set serverTimestamp
 

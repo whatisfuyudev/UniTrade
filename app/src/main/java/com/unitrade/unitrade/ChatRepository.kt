@@ -29,6 +29,10 @@ class ChatRepository @Inject constructor(
 ) {
     private val chatsCol = firestore.collection("chats")
     private fun currentUid() = auth.currentUser?.uid
+    
+    companion object {
+        private const val TAG = "ChatRepository"
+    }
 
     /**
      * (Keberadaan lama) Tetap sediakan fungsi lama untuk kompatibilitas.
@@ -58,18 +62,31 @@ class ChatRepository @Inject constructor(
         }
 
         val docRef = chatsCol.document(docId)
+        
         val snap = docRef.get().await()
-        if (snap.exists()) return docId
+        
+        if (snap.exists()) {
+            // Document exists, verify participants field
+            val participants = snap.get("participants") as? List<*>
+            
+            if (participants != null && participants.isNotEmpty()) {
+                return docId
+            }
+        }
 
-        val data = mutableMapOf<String, Any?>(
+        val data = hashMapOf<String, Any>(
             "chatId" to docId,
             "participants" to listOf(userA, userB),
-            "lastMessageText" to null,
+            "lastMessageText" to "",
             "lastMessageAt" to FieldValue.serverTimestamp()
         )
-        if (!productId.isNullOrBlank()) data["productId"] = productId
+        if (!productId.isNullOrBlank()) {
+            data["productId"] = productId
+        }
 
-        docRef.set(data).await()
+        docRef.set(data, com.google.firebase.firestore.SetOptions.merge()).await()
+        kotlinx.coroutines.delay(100)
+        
         return docId
     }
 
@@ -98,6 +115,47 @@ class ChatRepository @Inject constructor(
             "lastMessageAt" to FieldValue.serverTimestamp()
         ))
         batch.commit().await()
+        
+        sendChatNotification(chatId, message)
+    }
+
+    private suspend fun sendChatNotification(chatId: String, message: ChatMessage) {
+        try {
+            val threadSnapshot = chatsCol.document(chatId).get().await()
+            val participants = threadSnapshot.get("participants") as? List<String> ?: return
+            
+            val recipientId = participants.firstOrNull { it != message.senderId } ?: return
+            
+            val senderDoc = firestore.collection("users").document(message.senderId).get().await()
+            val senderName = senderDoc.getString("displayName") ?: "Someone"
+            
+            val recipientDoc = firestore.collection("users").document(recipientId).get().await()
+            val fcmToken = recipientDoc.getString("fcmToken")
+            
+            if (!fcmToken.isNullOrBlank()) {
+                val messagePreview = when {
+                    !message.text.isNullOrBlank() -> message.text.take(50)
+                    message.imageUrl != null -> "📷 Gambar"
+                    else -> "Pesan baru"
+                }
+                
+                val notificationData = hashMapOf(
+                    "token" to fcmToken,
+                    "title" to senderName,
+                    "body" to messagePreview,
+                    "chatId" to chatId,
+                    "type" to "chat",
+                    "timestamp" to FieldValue.serverTimestamp(),
+                    "read" to false
+                )
+                
+                firestore.collection("pending_notifications")
+                    .add(notificationData)
+                    .await()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     /**
@@ -106,6 +164,33 @@ class ChatRepository @Inject constructor(
      * (Sama seperti sebelumnya, tetap menggunakan orderBy pada messages)
      */
     fun observeMessages(chatId: String, limit: Long = 100L) = callbackFlow<List<ChatMessage>> {
+        
+        try {
+            val chatDoc = chatsCol.document(chatId).get().await()
+            
+            if (!chatDoc.exists()) {
+                trySend(emptyList())
+                close()
+                return@callbackFlow
+            }
+            
+            val participants = chatDoc.get("participants") as? List<*>
+            val currentUid = currentUid()
+            Log.d(TAG, "observeMessages: Participants=$participants, currentUid=$currentUid")
+            
+            if (currentUid == null || participants?.contains(currentUid) != true) {
+                Log.e(TAG, "observeMessages: Access denied - user not a participant")
+                close(Exception("Access denied: Not a participant"))
+                return@callbackFlow
+            }
+            
+            Log.d(TAG, "observeMessages: Access granted, setting up listener")
+        } catch (e: Exception) {
+            Log.e(TAG, "observeMessages: Error checking chat access", e)
+            close(e)
+            return@callbackFlow
+        }
+        
         val query = chatsCol.document(chatId)
             .collection("messages")
             .orderBy("createdAt", Query.Direction.ASCENDING)

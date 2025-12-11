@@ -60,6 +60,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     private var tvPrice: TextView? = null
     private var tvCondition: TextView? = null
     private var tvDescription: TextView? = null
+    private var chipProductStatus: com.google.android.material.chip.Chip? = null
 
     // seller views
     private var imgSellerAvatar: ImageView? = null
@@ -85,6 +86,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         tvPrice = view.findViewById(R.id.tvPrice)
         tvCondition = view.findViewById(R.id.tvCondition)
         tvDescription = view.findViewById(R.id.tvDescription)
+        chipProductStatus = view.findViewById(R.id.chipProductStatus)
 
         imgSellerAvatar = view.findViewById(R.id.imgSellerAvatar)
         tvSellerName = view.findViewById(R.id.tvSellerName)
@@ -170,6 +172,16 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         tvCondition?.text = product.condition
         tvDescription?.text = product.description
         tvAction?.text = product.action ?: "-"
+
+        if (product.isSold) {
+            chipProductStatus?.text = "Terjual"
+            chipProductStatus?.setChipBackgroundColorResource(R.color.red_500)
+            btnChat?.visibility = View.GONE
+        } else {
+            chipProductStatus?.text = "Tersedia"
+            chipProductStatus?.setChipBackgroundColorResource(R.color.green_500)
+            btnChat?.visibility = View.VISIBLE
+        }
 
         // prepare image list: filter out "-" or blank placeholders
         val imgs = product.imageUrls.filter { it.isNotBlank() && it != "-" }

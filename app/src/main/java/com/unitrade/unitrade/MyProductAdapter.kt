@@ -33,7 +33,8 @@ import java.util.Locale
 class MyProductAdapter(
     private val onEdit: (Product) -> Unit,
     private val onDelete: (Product) -> Unit,
-    private val onClick: (Product) -> Unit
+    private val onClick: (Product) -> Unit,
+    private val onMarkSold: (Product) -> Unit
 ) : ListAdapter<Product, MyProductAdapter.VH>(DIFF) {
 
     companion object {
@@ -51,6 +52,8 @@ class MyProductAdapter(
         val title: TextView = view.findViewById(R.id.tvTitleMy)
         val price: TextView = view.findViewById(R.id.tvPriceMy)
         val condition: TextView = view.findViewById(R.id.tvConditionMy)
+        val statusChip: com.google.android.material.chip.Chip = view.findViewById(R.id.chipStatus)
+        val btnMarkSold: ImageButton = view.findViewById(R.id.btnMarkSold)
         val btnEdit: ImageButton = view.findViewById(R.id.btnEditProduct)
         val btnDelete: ImageButton = view.findViewById(R.id.btnDeleteProduct)
     }
@@ -67,6 +70,16 @@ class MyProductAdapter(
         holder.price.text = formatPrice(p.price)
         holder.condition.text = p.condition
 
+        if (p.isSold) {
+            holder.statusChip.text = "Terjual"
+            holder.statusChip.setChipBackgroundColorResource(R.color.red_500)
+            holder.btnMarkSold.visibility = View.GONE
+        } else {
+            holder.statusChip.text = "Tersedia"
+            holder.statusChip.setChipBackgroundColorResource(R.color.green_500)
+            holder.btnMarkSold.visibility = View.VISIBLE
+        }
+
         val imgUrl = p.imageUrls.firstOrNull()?.takeIf { it.isNotBlank() && it != "-" }
         if (imgUrl != null) {
             Glide.with(holder.img.context)
@@ -81,6 +94,7 @@ class MyProductAdapter(
         }
 
         holder.itemView.setOnClickListener { onClick(p) }
+        holder.btnMarkSold.setOnClickListener { onMarkSold(p) }
         holder.btnEdit.setOnClickListener { onEdit(p) }
         holder.btnDelete.setOnClickListener { onDelete(p) }
     }

@@ -53,6 +53,20 @@
             android:text="Like New"
             android:textAppearance="?attr/textAppearanceLabelSmall" />
 
+        <!-- Status badge (Tersedia/Terjual) -->
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/imgProductMy"
+            android:layout_below="@id/tvPriceMy"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="8dp"
+            android:text="Tersedia"
+            android:textSize="11sp"
+            app:chipBackgroundColor="@color/green_500"
+            android:textColor="@android:color/white" />
+
         <!-- action buttons on the right -->
         <LinearLayout
             android:id="@+id/actionButtons"
@@ -61,6 +75,15 @@
             android:orientation="horizontal"
             android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true">
+
+            <ImageButton
+                android:id="@+id/btnMarkSold"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_check_circle"
+                android:contentDescription="Mark as sold"
+                android:tint="@color/green_500" />
 
             <ImageButton
                 android:id="@+id/btnEditProduct"
