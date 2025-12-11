@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@color/white">
+    android:background="?android:attr/colorBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -28,6 +28,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Masuk ke UniTrade"
+            android:textColor="?android:attr/textColorPrimary"
             android:textAlignment="center"
             android:layout_marginBottom="24dp" />
 
@@ -91,6 +92,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Belum punya akun?"
+                android:textColor="?android:attr/textColorPrimary"
                 android:paddingEnd="6dp" />
 
             <TextView

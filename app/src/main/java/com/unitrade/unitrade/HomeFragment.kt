@@ -64,9 +64,17 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun setupToolbar() {
         val toolbar = binding.toolbar as MaterialToolbar
 
-        // Make toolbar visible and non-transparent
-        toolbar.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.white))
-        toolbar.setTitleTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+        val typedValue = android.util.TypedValue()
+        val theme = requireContext().theme
+        
+        theme.resolveAttribute(com.google.android.material.R.attr.colorSurface, typedValue, true)
+        val colorSurface = typedValue.data
+        
+        theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
+        val textColorPrimary = typedValue.data
+
+        toolbar.setBackgroundColor(colorSurface)
+        toolbar.setTitleTextColor(textColorPrimary)
         toolbar.elevation = resources.getDimension(R.dimen.toolbar_elevation)
 
         toolbar.setOnMenuItemClickListener { item ->

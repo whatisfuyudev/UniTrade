@@ -6,11 +6,13 @@
         android:id="@+id/action_search"
         android:title="Cari"
         android:icon="@drawable/ic_search"
+        app:iconTint="?android:attr/textColorPrimary"
         app:showAsAction="ifRoom|collapseActionView" />
 
     <item
         android:id="@+id/action_filter"
         android:title="Filter"
         android:icon="@drawable/ic_filter_list"
+        app:iconTint="?android:attr/textColorPrimary"
         app:showAsAction="ifRoom" />
 </menu>

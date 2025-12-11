@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="?android:attr/colorBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,7 +14,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="300dp"
-            android:background="@color/white">
+            android:background="?android:attr/colorBackground">
 
             <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/vpImages"
@@ -42,7 +42,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="16dp"
-            app:cardElevation="8dp">
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="@color/colorPrimary">
 
             <LinearLayout
                 android:padding="16dp"
@@ -62,6 +63,7 @@
                         android:layout_weight="1"
                         android:layout_height="wrap_content"
                         android:text="Judul Produk"
+                        android:textColor="@color/white"
                         style="?attr/textAppearanceHeadlineSmall" />
 
                     <ImageButton
@@ -70,6 +72,7 @@
                         android:layout_height="44dp"
                         android:background="@null"
                         android:src="@drawable/ic_favorite_border"
+                        app:tint="@color/white"
                         android:contentDescription="Simpan favorit" />
                 </LinearLayout>
 
@@ -78,6 +81,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Rp 0"
+                    android:textColor="@color/white"
                     android:textStyle="bold"
                     style="?attr/textAppearanceBodyLarge"
                     android:layout_marginTop="8dp" />
@@ -87,6 +91,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Like New"
+                    android:textColor="@color/white"
                     android:layout_marginTop="6dp"
                     style="?attr/textAppearanceLabelMedium"/>
 
@@ -106,6 +111,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Deskripsi produk..."
+                    android:textColor="@color/white"
                     android:layout_marginTop="12dp"
                     android:ellipsize="end"
                     android:maxLines="6" />
@@ -139,6 +145,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Nama Penjual"
+                            android:textColor="@color/white"
                             style="?attr/textAppearanceBodyLarge" />
 
                         <TextView
@@ -146,6 +153,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Fakultas"
+                            android:textColor="@color/white"
                             style="?attr/textAppearanceBodySmall" />
 
                         <TextView
@@ -153,6 +161,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Kontak"
+                            android:textColor="@color/white"
                             style="?attr/textAppearanceLabelSmall" />
                     </LinearLayout>
 

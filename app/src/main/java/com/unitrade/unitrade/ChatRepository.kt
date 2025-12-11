@@ -176,17 +176,13 @@ class ChatRepository @Inject constructor(
             
             val participants = chatDoc.get("participants") as? List<*>
             val currentUid = currentUid()
-            Log.d(TAG, "observeMessages: Participants=$participants, currentUid=$currentUid")
             
             if (currentUid == null || participants?.contains(currentUid) != true) {
-                Log.e(TAG, "observeMessages: Access denied - user not a participant")
                 close(Exception("Access denied: Not a participant"))
                 return@callbackFlow
             }
             
-            Log.d(TAG, "observeMessages: Access granted, setting up listener")
         } catch (e: Exception) {
-            Log.e(TAG, "observeMessages: Error checking chat access", e)
             close(e)
             return@callbackFlow
         }
